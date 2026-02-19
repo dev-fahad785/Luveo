@@ -118,8 +118,8 @@ const ImageCarouselWithStaticBanner = () => {
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
                                     <div className="absolute inset-0 flex items-center">
-                                        <div className="w-full max-w-6xl mx-auto px-6 sm:px-10 lg:px-14">
-                                            <div className="flex justify-start">
+                                        <div className="w-full max-w-6xl mx-auto px-3 sm:px-5 lg:px-10">
+                                            <div className="flex justify-start lg:-ml-20">
                                                 <div className="max-w-xl w-full space-y-4 sm:space-y-5 text-white drop-shadow-xl text-left bg-black/35 backdrop-blur-[1px] border border-white/10 rounded-sm px-5 sm:px-7 py-6">
                                                     <div className="flex items-center gap-3">
                                                         <span className="h-px w-8 bg-white/70" />
