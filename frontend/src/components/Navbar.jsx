@@ -26,7 +26,7 @@ const Navbar = () => {
                     <div />
                     <div className="flex justify-center">
                         <Link to="/" className="flex items-center select-none">
-                            <span className="text-4xl font-semibold tracking-tight">HUB</span>
+                            <span className="text-4xl font-semibold tracking-tight">LuveO</span>
                         </Link>
                     </div>
                     <div className="flex justify-end items-center gap-6 text-lg">
