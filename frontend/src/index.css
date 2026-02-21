@@ -1,6 +1,209 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+/* ─── PRADA-STYLE DESIGN TOKENS ─── */
+:root {
+  --prada-black: #000000;
+  --prada-white: #FFFFFF;
+  --prada-off-white: #F8F8F6;
+  --prada-gray: #767676;
+  --prada-light-gray: #E8E8E8;
+  --prada-mid-gray: #ABABAB;
+  --prada-border: #D8D8D8;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Inter', Helvetica, Arial, sans-serif;
+  --tracking-luxury: 0.2em;
+  --tracking-wide: 0.12em;
+  --transition-base: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ─── BASE RESET & TYPOGRAPHY ─── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
 
 body {
-    font-family: "Poppins", sans-serif !important;
+  font-family: var(--font-sans) !important;
+  background-color: var(--prada-white);
+  color: var(--prada-black);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── PRADA UTILITY CLASSES ─── */
+
+/* Typography */
+.font-serif-luxury {
+  font-family: var(--font-serif);
+}
+
+.text-luxury-heading {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.text-luxury-label {
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--prada-gray);
+}
+
+/* Underline link (Prada hover style) */
+.link-prada {
+  position: relative;
+  text-decoration: none;
+  letter-spacing: var(--tracking-wide);
+}
+
+.link-prada::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: var(--prada-black);
+  transition: width 0.3s ease;
+}
+
+.link-prada:hover::after {
+  width: 100%;
+}
+
+/* Thin decorative line */
+.prada-divider {
+  width: 40px;
+  height: 1px;
+  background-color: var(--prada-black);
+  margin: 0 auto;
+}
+
+/* Fade-in animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease forwards;
+}
+
+/* Scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Image hover zoom */
+.img-zoom {
+  overflow: hidden;
+}
+
+.img-zoom img {
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.img-zoom:hover img {
+  transform: scale(1.04);
+}
+
+/* Prada-style button (text-link with underline) */
+.btn-prada {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  color: var(--prada-black);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  padding: 0;
+}
+
+.btn-prada:hover {
+  opacity: 0.6;
+}
+
+.btn-prada-outline {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--prada-black);
+  background: none;
+  border: 1px solid var(--prada-black);
+  cursor: pointer;
+  padding: 10px 24px;
+  transition: var(--transition-base);
+}
+
+.btn-prada-outline:hover {
+  background: var(--prada-black);
+  color: var(--prada-white);
+}
+
+.btn-prada-solid {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--prada-white);
+  background: var(--prada-black);
+  border: 1px solid var(--prada-black);
+  cursor: pointer;
+  padding: 13px 28px;
+  transition: var(--transition-base);
+}
+
+.btn-prada-solid:hover {
+  background: transparent;
+  color: var(--prada-black);
+}
+
+/* Slick carousel dots override */
+.slick-dots li button:before {
+  color: rgba(0,0,0,0.3) !important;
+  font-size: 6px !important;
+}
+
+.slick-dots li.slick-active button:before {
+  color: var(--prada-black) !important;
+}
+
+.slick-prev:before, .slick-next:before {
+  color: var(--prada-black) !important;
+}

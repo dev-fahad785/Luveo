@@ -20,7 +20,17 @@ import WhatsAppButton from './components/WhatsappBtn'
 import NotificationPopup from './components/Notification'
 import AddNotification from './components/AddNotification'
 import RandomOrder from './components/random/RandomOrder'
-import { TextScroll } from './components/ScrollText'
+import Navbar from './components/Navbar'
+import Footer from './components/Footer'
+
+/* Wrap public pages with the Prada Navbar + Footer */
+const PublicLayout = ({ children }) => (
+  <>
+    <Navbar />
+    <main>{children}</main>
+    <Footer />
+  </>
+);
 
 const App = () => {
   const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
@@ -61,18 +71,19 @@ const App = () => {
       )}
 
       <Routes>
-        <Route path='/' element={<Home />} />
-        <Route path='/signup' element={<Signup />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/product/:id' element={<ProductDisplay />} />
-        <Route path='/profile' element={<Profile />} />
-        <Route path='/all-products' element={<AllProducts />} />
-        <Route path="/products/:category" element={<AllProducts />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/payment/success" element={<SuccessPayment />} />
-        <Route path="/payment/cancel" element={<CancelPayment />} />
+        {/* Public routes with Navbar + Footer layout */}
+        <Route path='/' element={<PublicLayout><Home isLayout={false} /></PublicLayout>} />
+        <Route path='/signup' element={<PublicLayout><Signup /></PublicLayout>} />
+        <Route path='/login' element={<PublicLayout><Login /></PublicLayout>} />
+        <Route path='/product/:id' element={<PublicLayout><ProductDisplay /></PublicLayout>} />
+        <Route path='/profile' element={<PublicLayout><Profile /></PublicLayout>} />
+        <Route path='/all-products' element={<PublicLayout><AllProducts /></PublicLayout>} />
+        <Route path="/products/:category" element={<PublicLayout><AllProducts /></PublicLayout>} />
+        <Route path="/checkout" element={<PublicLayout><Checkout /></PublicLayout>} />
+        <Route path="/payment/success" element={<PublicLayout><SuccessPayment /></PublicLayout>} />
+        <Route path="/payment/cancel" element={<PublicLayout><CancelPayment /></PublicLayout>} />
 
-        {/* Admin Routes - Use ProtectedRoute for access control */}
+        {/* Admin Routes (no Navbar/Footer layout) */}
         <Route path='/admin' element={<ProtectedRoute role={role} requiredRole="admin"><Admin /></ProtectedRoute>} />
         <Route path='/add-product' element={<ProtectedRoute role={role} requiredRole="admin"><AddProduct /></ProtectedRoute>} />
         <Route path='/add-users' element={<ProtectedRoute role={role} requiredRole="admin"><User /></ProtectedRoute>} />
@@ -89,4 +100,3 @@ const App = () => {
 }
 
 export default App;
-
