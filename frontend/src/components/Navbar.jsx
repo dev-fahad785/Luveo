@@ -1,62 +1,248 @@
-
-
-import React from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faShoppingCart, faSearch } from "@fortawesome/free-solid-svg-icons";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
+const SearchIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+    <circle cx="11" cy="11" r="7" />
+    <path d="M21 21l-4.35-4.35" strokeLinecap="round" />
+  </svg>
+);
+
+const AccountIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" strokeLinecap="round" />
+  </svg>
+);
+
+const CartIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" strokeLinejoin="round" />
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <path d="M16 10a4 4 0 01-8 0" />
+  </svg>
+);
+
 const navItems = [
-    { label: "NEW ARRIVALS", path: "/" },
-    { label: "MEN", path: "/products/men" },
-    { label: "WOMEN", path: "/products/women" },
-    { label: "GIFTING", path: "/products/gifting" },
-    { label: "LOYALTY PROGRAM", path: "/loyalty" },
-    { label: "INFORMATION", path: "/info" },
+  { label: "New Arrivals", path: "/" },
+  { label: "Men",          path: "/products/men" },
+  { label: "Women",        path: "/products/women" },
+  { label: "Gifting",      path: "/products/gifting" },
+  { label: "All Products", path: "/all-products" },
 ];
 
 const Navbar = () => {
-    return (
-        <header className="bg-white text-gray-900 border-b border-gray-200">
-                        <div className="bg-black  text-white text-sm md:text-lg lg:text-lg font-bold  italic text-black text-sm py-2 text-center border-b-2 border-white">
-                <p>GET FREE DELIVERY ON ALL ORDERS OF RS 1990 AND ABOVE, WITH DELIVERY WITHIN 3-7 DAYS.</p>
-            </div>
-            <div className="w-full px-4 lg:px-10">
-                {/* Top row: centered logo, right icons */}
-                <div className="grid grid-cols-3 items-center py-3">
-                    <div />
-                    <div className="flex justify-center">
-                        <Link to="/" className="flex items-center select-none">
-                            <span className="text-4xl font-semibold tracking-tight">LuveO</span>
-                        </Link>
-                    </div>
-                    <div className="flex justify-end items-center gap-6 text-lg">
-                        <Link to="/profile" aria-label="Account" className="hover:opacity-70">
-                            <FontAwesomeIcon icon={faUser} />
-                        </Link>
-                        <button aria-label="Search" className="hover:opacity-70">
-                            <FontAwesomeIcon icon={faSearch} />
-                        </button>
-                        <Link to="/cart" aria-label="Cart" className="hover:opacity-70">
-                            <FontAwesomeIcon icon={faShoppingCart} />
-                        </Link>
-                    </div>
-                </div>
+  const [scrolled, setScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-                {/* Bottom row: nav links */}
-                <nav className="flex justify-center gap-8 pb-3 text-xs tracking-[0.28em] uppercase text-gray-800">
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.label}
-                            to={item.path}
-                            className="relative pb-1 hover:opacity-80"
-                        >
-                            {item.label}
-                        </Link>
-                    ))}
-                </nav>
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <>
+      {/* ── Announcement Bar ── */}
+      <div
+        style={{
+          background: "var(--prada-black)",
+          color: "var(--prada-white)",
+          fontSize: "0.6rem",
+          letterSpacing: "0.22em",
+          textTransform: "uppercase",
+          textAlign: "center",
+          padding: "9px 16px",
+          fontFamily: "var(--font-sans)",
+          fontWeight: 400,
+        }}
+      >
+        Complimentary shipping on all orders · Free gift wrapping available
+      </div>
+
+      {/* ── Main Header ── */}
+      <header
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+          background: scrolled ? "rgba(255,255,255,0.96)" : "var(--prada-white)",
+          backdropFilter: scrolled ? "blur(12px)" : "none",
+          borderBottom: "1px solid var(--prada-border)",
+          transition: "all 0.3s ease",
+        }}
+      >
+        {/* ── Single Row: Logo Left · Nav Centre · Icons Right ── */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "12px 32px",
+            gap: 24,
+          }}
+        >
+          {/* Left — Logo */}
+          <Link
+            to="/"
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: "clamp(1.25rem, 2.5vw, 1.65rem)",
+              fontWeight: 300,
+              letterSpacing: "0.4em",
+              textTransform: "uppercase",
+              color: "var(--prada-black)",
+              textDecoration: "none",
+              userSelect: "none",
+              flexShrink: 0,
+            }}
+          >
+            LuvEo
+          </Link>
+
+          {/* Centre — Nav links */}
+          <nav
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "clamp(16px, 3vw, 40px)",
+              flex: 1,
+              justifyContent: "center",
+            }}
+          >
+            {navItems.map(item => (
+              <NavLink key={item.label} to={item.path} label={item.label} />
+            ))}
+          </nav>
+
+          {/* Right — Action icons */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 18,
+              flexShrink: 0,
+            }}
+          >
+            <button
+              onClick={() => setSearchOpen(!searchOpen)}
+              aria-label="Search"
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--prada-black)",
+                padding: 0,
+                display: "flex",
+                opacity: searchOpen ? 0.5 : 1,
+                transition: "opacity 0.2s",
+              }}
+            >
+              <SearchIcon />
+            </button>
+
+            <Link
+              to="/profile"
+              aria-label="Account"
+              style={{ color: "var(--prada-black)", display: "flex", transition: "opacity 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.5"}
+              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+            >
+              <AccountIcon />
+            </Link>
+
+            <Link
+              to="/profile"
+              aria-label="Cart"
+              style={{ color: "var(--prada-black)", display: "flex", transition: "opacity 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.5"}
+              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+            >
+              <CartIcon />
+            </Link>
+          </div>
+        </div>
+
+        {/* ── Search Bar (dropdown) ── */}
+        {searchOpen && (
+          <div
+            style={{
+              borderTop: "1px solid var(--prada-border)",
+              padding: "14px 40px",
+              background: "var(--prada-white)",
+            }}
+          >
+            <div style={{ maxWidth: 480, margin: "0 auto", position: "relative" }}>
+              <input
+                autoFocus
+                type="text"
+                placeholder="Search for products…"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                style={{
+                  width: "100%",
+                  border: "none",
+                  borderBottom: "1px solid var(--prada-black)",
+                  outline: "none",
+                  fontSize: "0.8rem",
+                  letterSpacing: "0.08em",
+                  padding: "6px 0",
+                  fontFamily: "var(--font-sans)",
+                  background: "transparent",
+                  color: "var(--prada-black)",
+                }}
+              />
+              <button
+                onClick={() => setSearchOpen(false)}
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: "1.1rem",
+                  color: "var(--prada-gray)",
+                }}
+              >
+                ×
+              </button>
             </div>
-        </header>
-    );
+          </div>
+        )}
+      </header>
+    </>
+  );
+};
+
+/* Animated underline nav link */
+const NavLink = ({ to, label }) => {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <Link
+      to={to}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        fontFamily: "var(--font-sans)",
+        fontSize: "0.62rem",
+        fontWeight: 400,
+        letterSpacing: "0.22em",
+        textTransform: "uppercase",
+        color: "var(--prada-black)",
+        textDecoration: "none",
+        paddingBottom: "3px",
+        borderBottom: hovered ? "1px solid var(--prada-black)" : "1px solid transparent",
+        transition: "border-color 0.25s ease",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {label}
+    </Link>
+  );
 };
 
 export default Navbar;

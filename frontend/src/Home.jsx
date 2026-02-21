@@ -2,25 +2,29 @@ import Carousel from './components/Carousel'
 import Explore from './components/Explore'
 import Heading from './components/Heading'
 import FeaturedProducts from './components/FeaturedProducts'
-import FeatureSection from './components/Features'
-import ProductCarousel from './components/ProductCarousel'
-import CardCarousel from './components/CardCarousel'
 import { TextScroll } from './components/ScrollText'
+
 const Home = () => {
-
-
     return (
-        < >
+        <>
             <Carousel />
             <TextScroll />
-            <Heading heading={"Flash Sale"} subHeading={"Purchase It, Before it run out of stock "} />
-            <CardCarousel />
-            <FeatureSection />
-            <ProductCarousel />
-            <Heading heading={"Explore"} subHeading={"Explore our wide range of products"} />
+
+            {/* Editorial Category Section */}
+            <Heading
+                heading="Explore"
+                subHeading="Shop by category"
+            />
             <Explore />
-            <Heading heading={"Featured Products"} subHeading={"Check out our Featured Products"} />
-            <ProductCarousel />
+
+            {/* Thin divider */}
+            <div style={{ borderTop: "1px solid var(--prada-border)", margin: "0 clamp(20px,5vw,80px)" }} />
+
+            {/* Full Product Grid */}
+            <Heading
+                heading="The Collection"
+                subHeading="All products"
+            />
             <FeaturedProducts />
         </>
     )
