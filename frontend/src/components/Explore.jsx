@@ -15,7 +15,10 @@ const Explore = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => entries.forEach(e => {
-        if (e.isIntersecting) e.target.classList.add("prada-reveal-in");
+        if (e.isIntersecting) {
+          e.target.classList.add("opacity-100", "translate-y-0");
+          observer.unobserve(e.target);
+        }
       }),
       { threshold: 0.15 }
     );
@@ -24,16 +27,8 @@ const Explore = () => {
   }, []);
 
   return (
-    <section style={{ padding: "0 clamp(20px, 5vw, 80px) 80px", background: "var(--prada-off-white)" }}>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "clamp(16px, 3vw, 32px)",
-          maxWidth: 1440,
-          margin: "0 auto",
-        }}
-      >
+    <section className="bg-[#f7f7f7] pb-20 px-[clamp(20px,5vw,80px)]">
+      <div className="max-w-[1440px] mx-auto grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-[clamp(16px,3vw,32px)]">
         {categories.map((item, idx) => (
           <CategoryPanel
             key={item.id}
@@ -45,23 +40,6 @@ const Explore = () => {
         ))}
       </div>
 
-      <style>{`
-        .prada-category-panel {
-          opacity: 0;
-          transform: translateY(28px);
-          transition: opacity 0 ease, transform 0 ease;
-        }
-        .prada-reveal-in {
-          animation: pradaReveal 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        @keyframes pradaReveal {
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .prada-category-panel:nth-child(1) { animation-delay: 0s; }
-        .prada-category-panel:nth-child(2) { animation-delay: 0.1s; }
-        .prada-category-panel:nth-child(3) { animation-delay: 0.2s; }
-        .prada-category-panel:nth-child(4) { animation-delay: 0.3s; }
-      `}</style>
     </section>
   );
 };
@@ -73,63 +51,27 @@ const CategoryPanel = React.forwardRef(({ item, onClick }, ref) => {
     <div
       ref={ref}
       onClick={onClick}
-      className="prada-category-panel"
+      className={`opacity-0 translate-y-7 transition-all duration-700 ease-out cursor-pointer flex flex-col gap-4`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ cursor: "pointer", display: "flex", flexDirection: "column", gap: "16px" }}
     >
-      {/* Container image */}
+      {/* Container with background image and overlay text */}
       <div
-        style={{
-          position: "relative",
-          width: "100%",
-          aspectRatio: "4/5",
-          overflow: "hidden",
-          background: "var(--prada-light-gray)",
-          borderRadius: "var(--radius-md)", // Added rounded corners
-          boxShadow: hovered ? "0 10px 30px rgba(0,0,0,0.1)" : "0 4px 6px rgba(0,0,0,0.05)",
-          transition: "box-shadow 0.4s ease",
-        }}
+        className={`relative w-full aspect-[4/5] overflow-hidden bg-[#ededed] rounded-xl shadow-[0_4px_6px_rgba(0,0,0,0.05)] transition duration-400 ${hovered ? "shadow-[0_10px_30px_rgba(0,0,0,0.1)]" : ""}`}
       >
-        <img
-          src={item.image}
-          alt={item.category}
-          loading="lazy"
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
-            transform: hovered ? "scale(1.04)" : "scale(1)",
-          }}
+        <div
+          className={`absolute inset-0 bg-cover bg-center transition-transform duration-500 ${hovered ? "scale-[1.04]" : "scale-100"}`}
+          style={{ backgroundImage: `url(${item.image})` }}
         />
-      </div>
-
-      {/* Label below image */}
-      <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <p
-          style={{
-            fontFamily: "var(--font-sans)",
-            fontSize: "1rem",
-            fontWeight: 700,
-            letterSpacing: "0.05em",
-            color: "var(--prada-black)",
-            margin: "0 0 6px",
-            transition: "color 0.2s",
-          }}
-        >
-          {item.category}
-        </p>
-        <span
-          style={{
-            display: "inline-block",
-            height: 2, // Thicker underline
-            width: hovered ? "40px" : "20px",
-            background: hovered ? "var(--brand-accent)" : "var(--prada-mid-gray)",
-            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            borderRadius: "2px",
-          }}
-        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/15 to-black/40" />
+        <div className="absolute inset-x-0 bottom-0 flex flex-col items-center pb-6 px-4 text-center">
+          <p className="font-sans text-white text-base font-bold tracking-[0.05em] mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]">
+            {item.category}
+          </p>
+          <span
+            className={`h-[2px] rounded-full transition-all duration-300 ${hovered ? "w-10 bg-[#e53945]" : "w-5 bg-white/70"}`}
+          />
+        </div>
       </div>
     </div>
   );
