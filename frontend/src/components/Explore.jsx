@@ -2,10 +2,10 @@ import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 const categories = [
-  { id: 1, category: "women bags",      image: "https://images.pexels.com/photos/23223837/pexels-photo-23223837.jpeg?_gl=1*su7qjh*_ga*MTEyMzM2ODEyNy4xNzcxNjY5OTAy*_ga_8JE65Q40S6*czE3NzE2Njk5MDIkbzEkZzEkdDE3NzE2NzA5NDQkajQzJGwwJGgw"        },
-  { id: 2, category: "Men Wallet", image: "https://images.unsplash.com/photo-1606503825008-909a67e63c3d?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"    },
-  { id: 3, category: "Lather Belts",   image: "https://images.unsplash.com/photo-1664286074176-5206ee5dc878?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"     },
-  { id: 4, category: "Perfume",  image: "https://images.unsplash.com/photo-1535683577427-740aaac4ec25?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"   },
+  { id: 1, category: "Women's Bags",      image: "https://images.pexels.com/photos/23223837/pexels-photo-23223837.jpeg?_gl=1*su7qjh*_ga*MTEyMzM2ODEyNy4xNzcxNjY5OTAy*_ga_8JE65Q40S6*czE3NzE2Njk5MDIkbzEkZzEkdDE3NzE2NzA5NDQkajQzJGwwJGgw"        },
+  { id: 2, category: "Men's Wallets", image: "https://images.unsplash.com/photo-1606503825008-909a67e63c3d?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"    },
+  { id: 3, category: "Leather Belts",   image: "https://images.unsplash.com/photo-1664286074176-5206ee5dc878?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"     },
+  { id: 4, category: "Accessories",  image: "https://images.unsplash.com/photo-1535683577427-740aaac4ec25?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"   },
 ];
 
 const Explore = () => {
@@ -24,13 +24,13 @@ const Explore = () => {
   }, []);
 
   return (
-    <section style={{ padding: "0 clamp(20px, 5vw, 80px) 80px", background: "var(--prada-white)" }}>
+    <section style={{ padding: "0 clamp(20px, 5vw, 80px) 80px", background: "var(--prada-off-white)" }}>
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-          gap: "clamp(12px, 2vw, 28px)",
-          maxWidth: 1200,
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: "clamp(16px, 3vw, 32px)",
+          maxWidth: 1440,
           margin: "0 auto",
         }}
       >
@@ -40,7 +40,7 @@ const Explore = () => {
             item={item}
             idx={idx}
             ref={el => (itemsRef.current[idx] = el)}
-            onClick={() => navigate(`/products/${item.category.toLowerCase()}`)}
+            onClick={() => navigate(`/products/${item.category.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}`)}
           />
         ))}
       </div>
@@ -52,7 +52,7 @@ const Explore = () => {
           transition: opacity 0 ease, transform 0 ease;
         }
         .prada-reveal-in {
-          animation: pradaReveal 0.7s ease forwards;
+          animation: pradaReveal 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
         @keyframes pradaReveal {
           to { opacity: 1; transform: translateY(0); }
@@ -76,16 +76,19 @@ const CategoryPanel = React.forwardRef(({ item, onClick }, ref) => {
       className="prada-category-panel"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ cursor: "pointer" }}
+      style={{ cursor: "pointer", display: "flex", flexDirection: "column", gap: "16px" }}
     >
-      {/* Tall portrait image */}
+      {/* Container image */}
       <div
         style={{
           position: "relative",
           width: "100%",
-          aspectRatio: "2/3",
+          aspectRatio: "4/5",
           overflow: "hidden",
-          background: "var(--prada-off-white)",
+          background: "var(--prada-light-gray)",
+          borderRadius: "var(--radius-md)", // Added rounded corners
+          boxShadow: hovered ? "0 10px 30px rgba(0,0,0,0.1)" : "0 4px 6px rgba(0,0,0,0.05)",
+          transition: "box-shadow 0.4s ease",
         }}
       >
         <img
@@ -96,23 +99,23 @@ const CategoryPanel = React.forwardRef(({ item, onClick }, ref) => {
             width: "100%",
             height: "100%",
             objectFit: "cover",
-            transition: "transform 0.65s cubic-bezier(0.25,0.46,0.45,0.94)",
-            transform: hovered ? "scale(1.05)" : "scale(1)",
+            transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+            transform: hovered ? "scale(1.04)" : "scale(1)",
           }}
         />
       </div>
 
       {/* Label below image */}
-      <div style={{ paddingTop: 14, textAlign: "center" }}>
+      <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
         <p
           style={{
             fontFamily: "var(--font-sans)",
-            fontSize: "0.62rem",
-            fontWeight: 400,
-            letterSpacing: "0.24em",
-            textTransform: "uppercase",
+            fontSize: "1rem",
+            fontWeight: 700,
+            letterSpacing: "0.05em",
             color: "var(--prada-black)",
-            margin: "0 0 4px",
+            margin: "0 0 6px",
+            transition: "color 0.2s",
           }}
         >
           {item.category}
@@ -120,10 +123,11 @@ const CategoryPanel = React.forwardRef(({ item, onClick }, ref) => {
         <span
           style={{
             display: "inline-block",
-            height: 1,
-            width: hovered ? "60%" : "0%",
-            background: "var(--prada-black)",
-            transition: "width 0.35s ease",
+            height: 2, // Thicker underline
+            width: hovered ? "40px" : "20px",
+            background: hovered ? "var(--brand-accent)" : "var(--prada-mid-gray)",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            borderRadius: "2px",
           }}
         />
       </div>

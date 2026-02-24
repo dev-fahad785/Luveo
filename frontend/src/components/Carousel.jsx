@@ -8,25 +8,22 @@ const slides = [
     image: "https://images.unsplash.com/photo-1531190260877-c8d11eb5afaf?q=80&w=1470&auto=format&fit=crop",
     category: "New Arrivals",
     title: "Everyday Luxury",
-    cta: "Discover the Collection",
+    cta: "Shop the Collection",
     ctaPath: "/all-products",
-    align: "left",
   },
   {
     image: "https://images.unsplash.com/photo-1620109176813-e91290f6c795?q=80&w=1170&auto=format&fit=crop",
-    category: "Women",
+    category: "Women's",
     title: "Crafted to Carry More",
-    cta: "Shop Women",
+    cta: "Shop Women's",
     ctaPath: "/products/women",
-    align: "center",
   },
   {
     image: "https://plus.unsplash.com/premium_photo-1726769202190-ad2a3f2f360b?q=80&w=1170&auto=format&fit=crop",
-    category: "Men",
+    category: "Men's",
     title: "Weekend Ready",
-    cta: "Shop Men",
+    cta: "Shop Men's",
     ctaPath: "/products/men",
-    align: "right",
   },
   {
     image: "https://images.unsplash.com/photo-1560472355-536de3962603?q=80&w=1170&auto=format&fit=crop",
@@ -34,7 +31,6 @@ const slides = [
     title: "The Art of Giving",
     cta: "Explore Gifts",
     ctaPath: "/products/gifting",
-    align: "left",
   },
   {
     image: "https://images.unsplash.com/photo-1586579724969-2cb96841bcb8?q=80&w=1089&auto=format&fit=crop",
@@ -42,7 +38,6 @@ const slides = [
     title: "Corporate Classics",
     cta: "Shop Now",
     ctaPath: "/all-products",
-    align: "center",
   },
 ];
 
@@ -57,18 +52,25 @@ const PrevArrow = ({ onClick }) => (
       top: "50%",
       transform: "translateY(-50%)",
       zIndex: 10,
-      background: "none",
-      border: "none",
+      background: "rgba(255, 255, 255, 0.15)",
+      backdropFilter: "blur(4px)",
+      border: "1px solid rgba(255, 255, 255, 0.3)",
+      borderRadius: "50%",
       cursor: "pointer",
       color: "#fff",
-      padding: "8px",
-      opacity: 0.75,
-      transition: "opacity 0.2s",
+      padding: "12px",
+      transition: "background 0.2s, transform 0.2s",
     }}
-    onMouseEnter={e => e.currentTarget.style.opacity = "1"}
-    onMouseLeave={e => e.currentTarget.style.opacity = "0.75"}
+    onMouseEnter={e => {
+      e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)";
+      e.currentTarget.style.transform = "translateY(-50%) scale(1.05)";
+    }}
+    onMouseLeave={e => {
+      e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
+      e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+    }}
   >
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   </button>
@@ -84,18 +86,25 @@ const NextArrow = ({ onClick }) => (
       top: "50%",
       transform: "translateY(-50%)",
       zIndex: 10,
-      background: "none",
-      border: "none",
+      background: "rgba(255, 255, 255, 0.15)",
+      backdropFilter: "blur(4px)",
+      border: "1px solid rgba(255, 255, 255, 0.3)",
+      borderRadius: "50%",
       cursor: "pointer",
       color: "#fff",
-      padding: "8px",
-      opacity: 0.75,
-      transition: "opacity 0.2s",
+      padding: "12px",
+      transition: "background 0.2s, transform 0.2s",
     }}
-    onMouseEnter={e => e.currentTarget.style.opacity = "1"}
-    onMouseLeave={e => e.currentTarget.style.opacity = "0.75"}
+    onMouseEnter={e => {
+      e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)";
+      e.currentTarget.style.transform = "translateY(-50%) scale(1.05)";
+    }}
+    onMouseLeave={e => {
+      e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
+      e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+    }}
   >
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   </button>
@@ -108,14 +117,14 @@ const Carousel = () => {
   const settings = {
     dots: false,
     infinite: true,
-    speed: 1000,
+    speed: 800,
     arrows: true,
     prevArrow: <PrevArrow />,
     nextArrow: <NextArrow />,
     autoplay: true,
     autoplaySpeed: 5000,
     fade: true,
-    cssEase: "ease-in-out",
+    cssEase: "cubic-bezier(0.4, 0, 0.2, 1)",
     slidesToShow: 1,
     slidesToScroll: 1,
     beforeChange: () => setTextVisible(false),
@@ -138,27 +147,32 @@ const Carousel = () => {
         ))}
       </Slider>
 
-      {/* Slide counter */}
+      {/* Slide counter dots underneath */}
       <div
         style={{
           position: "absolute",
-          bottom: 36,
-          right: 44,
+          bottom: 24,
+          left: "50%",
+          transform: "translateX(-50%)",
           zIndex: 10,
           display: "flex",
           alignItems: "center",
-          gap: 8,
+          gap: 12,
         }}
       >
         {slides.map((_, i) => (
-          <span
+          <button
             key={i}
+            aria-label={`Go to slide ${i + 1}`}
             style={{
-              display: "block",
-              width: i === currentSlide ? 28 : 8,
-              height: 1,
-              background: i === currentSlide ? "#fff" : "rgba(255,255,255,0.45)",
-              transition: "width 0.4s ease, background 0.4s ease",
+              width: i === currentSlide ? 32 : 12,
+              height: 4,
+              borderRadius: 2,
+              background: i === currentSlide ? "#fff" : "rgba(255,255,255,0.4)",
+              border: "none",
+              padding: 0,
+              transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+              cursor: "pointer",
             }}
           />
         ))}
@@ -168,15 +182,8 @@ const Carousel = () => {
 };
 
 const SlideItem = ({ slide, textVisible }) => {
-  const alignMap = {
-    left: { alignItems: "flex-start", paddingLeft: "clamp(32px, 10vw, 140px)" },
-    center: { alignItems: "center", textAlign: "center" },
-    right: { alignItems: "flex-end", paddingRight: "clamp(32px, 10vw, 140px)" },
-  };
-  const align = alignMap[slide.align] || alignMap.left;
-
   return (
-    <div style={{ position: "relative", height: "clamp(320px, 55vh, 520px)", overflow: "hidden" }}>
+    <div style={{ position: "relative", height: "clamp(500px, 80vh, 800px)", overflow: "hidden" }}>
       {/* Image */}
       <img
         src={slide.image}
@@ -188,68 +195,60 @@ const SlideItem = ({ slide, textVisible }) => {
           height: "100%",
           objectFit: "cover",
           objectPosition: "center",
+          transform: "scale(1.05)",
+          animation: "kenburns 15s ease-out infinite alternate",
         }}
       />
 
-      {/* Gradient overlay — subtle bottom-to-top fade */}
+      {/* Gradient center overlay for readability */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background:
-            "linear-gradient(to top, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.2) 40%, transparent 70%)",
+          background: "linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%)",
         }}
       />
-      {/* Light left edge vignette for left-aligned text */}
-      {slide.align === "left" && (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(to right, rgba(0,0,0,0.3) 0%, transparent 60%)",
-          }}
-        />
-      )}
 
-      {/* Text content */}
+      {/* Centered Text content */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "flex-end",
-          paddingBottom: "clamp(48px, 8vh, 100px)",
-          ...align,
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "0 24px",
+          textAlign: "center",
         }}
       >
         <div
           style={{
             opacity: textVisible ? 1 : 0,
-            transform: textVisible ? "translateY(0)" : "translateY(14px)",
-            transition: "opacity 0.7s ease, transform 0.7s ease",
+            transform: textVisible ? "translateY(0)" : "translateY(20px)",
+            transition: "opacity 0.8s ease, transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
             display: "flex",
             flexDirection: "column",
-            alignItems: slide.align === "center" ? "center" : "flex-start",
-            gap: 16,
-            maxWidth: 520,
+            alignItems: "center",
+            gap: 20,
+            maxWidth: 800,
           }}
         >
           {/* Category tag */}
           <span
             style={{
               fontFamily: "var(--font-sans)",
-              fontSize: "0.6rem",
-              fontWeight: 400,
-              letterSpacing: "0.3em",
+              fontSize: "0.8rem",
+              fontWeight: 600,
+              letterSpacing: "0.15em",
               textTransform: "uppercase",
-              color: "rgba(255,255,255,0.75)",
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
+              color: "#fff",
+              background: "rgba(0,0,0,0.4)",
+              padding: "6px 16px",
+              borderRadius: "4px",
+              backdropFilter: "blur(4px)",
             }}
           >
-            <span style={{ display: "inline-block", width: 28, height: 1, background: "rgba(255,255,255,0.6)" }} />
             {slide.category}
           </span>
 
@@ -257,40 +256,56 @@ const SlideItem = ({ slide, textVisible }) => {
           <h1
             style={{
               fontFamily: "var(--font-serif)",
-              fontSize: "clamp(2.4rem, 6vw, 4.5rem)",
-              fontWeight: 300,
-              letterSpacing: "0.06em",
+              fontSize: "clamp(2.5rem, 6vw, 5.5rem)",
+              fontWeight: 700,
+              letterSpacing: "0.02em",
               color: "#fff",
               margin: 0,
-              lineHeight: 1.15,
+              lineHeight: 1.1,
+              textShadow: "0 4px 12px rgba(0,0,0,0.3)",
             }}
           >
             {slide.title}
           </h1>
 
-          {/* CTA text-link */}
+          {/* CTA Solid Button */}
           <a
             href={slide.ctaPath}
             style={{
               fontFamily: "var(--font-sans)",
-              fontSize: "0.65rem",
-              fontWeight: 400,
-              letterSpacing: "0.28em",
+              fontSize: "0.95rem",
+              fontWeight: 600,
+              letterSpacing: "0.05em",
               textTransform: "uppercase",
-              color: "#fff",
-              textDecoration: "underline",
-              textUnderlineOffset: "5px",
-              textDecorationThickness: "1px",
-              transition: "opacity 0.2s",
-              marginTop: 4,
+              color: "var(--prada-black)",
+              backgroundColor: "#fff",
+              padding: "16px 40px",
+              borderRadius: "4px",
+              textDecoration: "none",
+              transition: "transform 0.2s, background-color 0.2s",
+              marginTop: 12,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
             }}
-            onMouseEnter={e => e.currentTarget.style.opacity = "0.6"}
-            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = "var(--prada-off-white)";
+              e.currentTarget.style.transform = "translateY(-2px)";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = "#fff";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
           >
             {slide.cta}
           </a>
         </div>
       </div>
+
+      <style>{`
+        @keyframes kenburns {
+          0% { transform: scale(1); }
+          100% { transform: scale(1.1); }
+        }
+      `}</style>
     </div>
   );
 };

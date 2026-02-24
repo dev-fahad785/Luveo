@@ -1,24 +1,41 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700&family=Montserrat:wght@300;400;600;700&family=Outfit:wght@300;400;500;600&display=swap');
 
-/* ─── PRADA-STYLE DESIGN TOKENS ─── */
+/* ─── WALDOR LEATHER-STYLE DESIGN TOKENS ─── */
 :root {
-  --prada-black: #000000;
+  --prada-black: #121212;
+  /* Deep charcoal */
   --prada-white: #FFFFFF;
-  --prada-off-white: #F8F8F6;
-  --prada-gray: #767676;
-  --prada-light-gray: #E8E8E8;
-  --prada-mid-gray: #ABABAB;
-  --prada-border: #D8D8D8;
-  --font-serif: 'Cormorant Garamond', Georgia, serif;
-  --font-sans: 'Inter', Helvetica, Arial, sans-serif;
-  --tracking-luxury: 0.2em;
-  --tracking-wide: 0.12em;
-  --transition-base: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --prada-off-white: #F3F3F3;
+  /* Light grey background */
+  --prada-gray: #6B7280;
+  /* Neutral gray */
+  --prada-light-gray: #E5E7EB;
+  --prada-mid-gray: #9CA3AF;
+  --prada-border: #E5E7EB;
+
+  --brand-accent: #E53935;
+  /* Red badge/accent color */
+
+  --font-serif: 'Montserrat', 'Outfit', sans-serif;
+  /* Headings */
+  --font-sans: 'Assistant', 'Inter', sans-serif;
+  /* Body */
+
+  --tracking-luxury: 0.1em;
+  /* Less dramatic tracking for modern look */
+  --tracking-wide: 0.05em;
+  --transition-base: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  /* Used for product cards */
 }
 
 /* ─── BASE RESET & TYPOGRAPHY ─── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -28,17 +45,18 @@ html {
 
 body {
   font-family: var(--font-sans) !important;
-  background-color: var(--prada-white);
+  background-color: var(--prada-off-white);
   color: var(--prada-black);
-  font-size: 14px;
+  font-size: 16px;
+  /* Slightly larger body font */
   font-weight: 400;
-  line-height: 1.6;
-  letter-spacing: 0.01em;
+  line-height: 1.5;
+  letter-spacing: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ─── PRADA UTILITY CLASSES ─── */
+/* ─── WALDOR UTILITY CLASSES ─── */
 
 /* Typography */
 .font-serif-luxury {
@@ -47,56 +65,40 @@ body {
 
 .text-luxury-heading {
   font-family: var(--font-serif);
-  font-weight: 300;
-  letter-spacing: 0.15em;
+  font-weight: 600;
+  /* Bolder headings */
+  letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
 }
 
 .text-luxury-label {
   font-family: var(--font-sans);
-  font-size: 0.65rem;
-  font-weight: 500;
-  letter-spacing: 0.22em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--prada-gray);
 }
 
-/* Underline link (Prada hover style) */
+/* Base Link */
 .link-prada {
   position: relative;
   text-decoration: none;
-  letter-spacing: var(--tracking-wide);
+  font-weight: 500;
+  transition: color 0.2s ease;
 }
 
-.link-prada::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background-color: var(--prada-black);
-  transition: width 0.3s ease;
-}
-
-.link-prada:hover::after {
-  width: 100%;
-}
-
-/* Thin decorative line */
-.prada-divider {
-  width: 40px;
-  height: 1px;
-  background-color: var(--prada-black);
-  margin: 0 auto;
+.link-prada:hover {
+  color: var(--prada-gray);
 }
 
 /* Fade-in animation */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(16px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -104,14 +106,14 @@ body {
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 0.8s ease forwards;
+  animation: fadeInUp 0.6s ease forwards;
 }
 
 /* Scroll reveal */
 .reveal {
   opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
 .reveal.visible {
@@ -122,50 +124,49 @@ body {
 /* Image hover zoom */
 .img-zoom {
   overflow: hidden;
+  border-radius: var(--radius-md);
+  /* Add radius here */
 }
 
 .img-zoom img {
-  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .img-zoom:hover img {
-  transform: scale(1.04);
+  transform: scale(1.03);
+  /* Subtle zoom */
 }
 
-/* Prada-style button (text-link with underline) */
+/* Waldor-style buttons */
 .btn-prada {
   display: inline-block;
   font-family: var(--font-sans);
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--prada-black);
   background: none;
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: color 0.2s ease;
   padding: 0;
 }
 
 .btn-prada:hover {
-  opacity: 0.6;
+  color: var(--brand-accent);
 }
 
 .btn-prada-outline {
   display: inline-block;
   font-family: var(--font-sans);
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--prada-black);
-  background: none;
-  border: 1px solid var(--prada-black);
+  background: transparent;
+  border: 2px solid var(--prada-black);
+  /* Thicker border */
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  padding: 10px 24px;
+  padding: 12px 24px;
   transition: var(--transition-base);
 }
 
@@ -177,16 +178,16 @@ body {
 .btn-prada-solid {
   display: inline-block;
   font-family: var(--font-sans);
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--prada-white);
   background: var(--prada-black);
-  border: 1px solid var(--prada-black);
+  border: 2px solid var(--prada-black);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  padding: 13px 28px;
+  padding: 14px 32px;
   transition: var(--transition-base);
+  text-align: center;
 }
 
 .btn-prada-solid:hover {
@@ -196,14 +197,15 @@ body {
 
 /* Slick carousel dots override */
 .slick-dots li button:before {
-  color: rgba(0,0,0,0.3) !important;
-  font-size: 6px !important;
+  color: rgba(18, 18, 18, 0.3) !important;
+  font-size: 8px !important;
 }
 
 .slick-dots li.slick-active button:before {
   color: var(--prada-black) !important;
 }
 
-.slick-prev:before, .slick-next:before {
+.slick-prev:before,
+.slick-next:before {
   color: var(--prada-black) !important;
 }

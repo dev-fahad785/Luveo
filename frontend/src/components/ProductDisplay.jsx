@@ -1,68 +1,54 @@
-
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import Reviews from "./random/Reviews"; // Import the Reviews component
-// import logo from "../images/logo.png";
-
-{/* <AlertMessage logoUrl={logo} /> */ }
-
-import {
-    FaShoppingCart,
-    FaBolt,
-    FaCheckCircle,
-    FaExpand
-} from 'react-icons/fa';
-import { motion } from 'framer-motion';
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { useParams } from "react-router-dom";
-import AlertMessage from "./Alert"; // Import the AlertMessage component
-// import DynamicProductSchema from "./DynamicProductScheme";
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaShoppingCart, FaExpand, FaCheck, FaAngleUp, FaAngleDown } from 'react-icons/fa';
 
-const EarbudsProductDisplay = () => {
+import Reviews from "./random/Reviews";
+import AlertMessage from "./Alert";
+
+const ProductDisplay = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
+
     const [product, setProduct] = useState(null);
-    const [selectedColor, setSelectedColor] = useState('black');
+    const [selectedColor, setSelectedColor] = useState(null);
     const [quantity, setQuantity] = useState(1);
-    // const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
     const [isFullScreenImage, setIsFullScreenImage] = useState(false);
+    
+    // Status states
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userId, setUserId] = useState(null);
     const [isAddingToCart, setIsAddingToCart] = useState(false);
     const [isBuyingNow, setIsBuyingNow] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null); // Initialize as null
-    const [showGuestSign, setShowGuestSignin] = useState(false)
-
-    const navigate = useNavigate();
-
+    
+    // Image gallery state
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0); 
+    const [showGuestSign, setShowGuestSignin] = useState(false);
+    
     // Alert state
-    const [alertProps, setAlertProps] = useState({
-        message: "",
-        type: "success",
-        visible: false
-    });
+    const [alertProps, setAlertProps] = useState({ message: "", type: "success", visible: false });
 
+    // Initialize user
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
-        if (!storedUser) {
-            console.log("No user found in localStorage");
-            return;
+        if (storedUser) {
+            try {
+                const user = JSON.parse(storedUser);
+                setUserId(user?.id || "");
+            } catch (e) { console.error(e); }
         }
-
-        const user = JSON.parse(storedUser);
-        setUserId(user?.id || "");
     }, []);
 
+    // Fetch product
     const getProduct = useCallback(async () => {
         try {
             setLoading(true);
             const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/product/get-product/${id}`);
-            console.log("Product fetched successfully");
-            console.log(response.data.product);
             const productData = response.data.product;
             setProduct(productData);
-            // Set the default selected image after fetching the product
-            setSelectedImage(productData.img[0]);
+            if(productData.colors?.length > 0) setSelectedColor(productData.colors[0].hex);
             setLoading(false);
         } catch (error) {
             console.error("Error fetching product:", error);
@@ -71,364 +57,355 @@ const EarbudsProductDisplay = () => {
         }
     }, [id]);
 
-    useEffect(() => {
-        if (id) {
-            getProduct();
-        }
-    }, [id, getProduct]);
+    useEffect(() => { if (id) getProduct(); }, [id, getProduct]);
 
-    const handleColorSelect = (color) => {
-        setSelectedColor(color.hex);
-    };
+    // Helpers
+    const showNotification = (message, type = "success") => setAlertProps({ message, type, visible: true });
+    const handleCloseAlert = () => setAlertProps(prev => ({ ...prev, visible: false }));
 
-    // Updated showNotification function to use AlertMessage
-    const showNotification = (message, type = "success") => {
-        setAlertProps({
-            message,
-            type,
-            visible: true
-        });
-    };
-
-    // Handler to close the alert
-    const handleCloseAlert = () => {
-        setAlertProps(prev => ({
-            ...prev,
-            visible: false
-        }));
-    };
     const handleGuestAcct = async () => {
         try {
-            setLoading(true)
+            setLoading(true);
             const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/guest-signup`);
             const user = response.data?.newUser;
             if (user) {
                 localStorage.setItem("user", JSON.stringify(user));
-                console.log("Guest account created:", user);
-                setShowGuestSignin(false); // Close alert after successful guest login
-                setLoading(false)
-                navigate('/');
-            } else {
-                console.error("No user returned from guest-signup API");
+                setShowGuestSignin(false);
+                setLoading(false);
+                window.location.reload();
             }
-        } catch (error) {
-            console.error("Error creating guest account:", error);
-        }
+        } catch (error) { console.error(error); setLoading(false); }
     };
-    const addToCart = async (productId, buyNow = false) => {
-        console.log("Adding to cart:", productId);
-        if (!userId) {
-            // showNotification("Please login to add items to cart hello", "error");
-            setShowGuestSignin(true)
-            return;
-        }
 
-        if (buyNow) {
-            setIsBuyingNow(true);
-        } else {
-            setIsAddingToCart(true);
-        }
+    const addToCart = async (productId, buyNow = false) => {
+        if (!userId) { setShowGuestSignin(true); return; }
+        if (buyNow) setIsBuyingNow(true); else setIsAddingToCart(true);
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/product/add-to-cart`, {
-                productId,
-                userId
-            });
-            console.log("Product added to cart:", response.data);
-
+            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/product/add-to-cart`, { productId, userId });
             showNotification(
-                buyNow
-                    ? "Product purchased successfully! Redirecting to profile..."
-                    : "Product added to cart successfully!",
+                buyNow ? "Product purchased successfully! Redirecting..." : "Added to cart successfully!",
                 "success"
             );
-
-            // If buying now, redirect to cart page
-            if (buyNow) {
-                setTimeout(() => {
-                    window.location.href = '/checkout';
-                }, 2000); // Give time for the alert to be visible
-            }
-            else {
-                // If just adding to cart, you can update the cart state or show a success message
-                setTimeout(() => {
-                    window.location.href = '/profile';
-                }, 2000); // Give time for the alert to be visible
-            }
+            setTimeout(() => window.location.href = buyNow ? '/checkout' : '/profile', 1500);
         } catch (error) {
-            console.error("Error:", error.response?.data?.message || error.message);
-            showNotification(
-                "Error: " + (error.response?.data?.message || error.message),
-                "error"
-            );
+            showNotification(error.response?.data?.message || "Error adding to cart", "error");
         } finally {
-            setIsAddingToCart(false);
-            setIsBuyingNow(false);
+            setIsAddingToCart(false); setIsBuyingNow(false);
         }
     };
 
-    // If loading or error, show appropriate message
-    if (loading) return <div className="min-h-screen flex items-center justify-center">Loading product...</div>;
-    if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
-    if (!product) return <div className="min-h-screen flex items-center justify-center">Product not found</div>;
+    const handlePrevImage = () => {
+       setSelectedImageIndex(prev => prev > 0 ? prev - 1 : product.img.length - 1);
+    };
 
-    const renderTechnicalSpecs = () => (
+    const handleNextImage = () => {
+       setSelectedImageIndex(prev => prev < product.img.length - 1 ? prev + 1 : 0);
+    };
 
+    if (loading) return <div className="min-h-screen flex items-center justify-center p-8"><div className="w-12 h-12 border-2 border-t-black border-gray-200 rounded-full animate-spin"></div></div>;
+    if (error) return <div className="min-h-screen flex items-center justify-center text-red-500 font-sans tracking-widest uppercase">{error}</div>;
+    if (!product) return <div className="min-h-screen flex items-center justify-center font-sans tracking-widest uppercase text-gray-500">Product not found</div>;
 
-        <div className="p-6 rounded-xl shadow-lg">
-            <h3 className="text-xl font-bold text-black mb-4 flex items-center">
-                <FaBolt className="mr-2 text-blue-600" /> Technical Specifications
-            </h3>
-            <div className="grid grid-cols-2 gap-4 text-black">
-                {Object.entries(product.technicalSpecs).map(([key, value]) => (
-                    <div key={key} className="bg-white p-3 rounded-lg shadow-md">
-                        <p className="text-sm text-black font-bold capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
-                        <p className="">{value}</p>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
+    const discountPercentage = Math.round(((product.price - product.discountPrice) / product.price) * 100);
 
     return (
-        <div className="min-h-screen  px-4">
-            {/* <DynamicProductSchema product={product} /> */}
-            {/* Alert Message Component */}
+        <div style={{ background: "var(--prada-off-white)", minHeight: "100vh", paddingBottom: "80px" }}>
+            
+            {/* Alerts & Modals */}
             {alertProps.visible && (
-                <AlertMessage
-                    message={alertProps.message}
-                    type={alertProps.type}
-                    onClose={handleCloseAlert}
-                    duration={5000}
-                    logoUrl={"../images/logo.png"}
-                    showCloseButton={true}
-                />
+                <AlertMessage message={alertProps.message} type={alertProps.type} onClose={handleCloseAlert} duration={4000} showCloseButton />
             )}
+            
             {showGuestSign && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center">
-                    <div className="bg-gray-400 w-full max-w-md px-6 py-6 text-center rounded-lg shadow-lg relative">
-                        {/* Close Button (X) positioned at the top-right */}
-                        <button
-                            className="absolute top-2 right-2 text-white bg-red-500 hover:bg-red-600 font-semibold text-lg rounded-full w-8 h-8 flex items-center justify-center"
-                            onClick={() => setShowGuestSignin(false)}
-                        >
-                            X
-                        </button>
-
-                        {loading ? (
-                            // Loader: Spinner shown while loading
-                            <div className="flex justify-center items-center">
-                                <div className="w-16 h-16 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin"></div>
-                            </div>
-                        ) : (
-                            <>
-                                <h2 className="text-lg font-semibold text-gray-800 mb-2">Continue Without Account</h2>
-                                <p className="text-gray-600 mb-4 text-sm">You can browse and use the app as a guest.</p>
-                                <button
-                                    onClick={handleGuestAcct}
-                                    className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
-                                >
-                                    Continue as Guest
-                                </button>
-                            </>
-                        )}
+                <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200 }}>
+                    <div style={{ background: "#fff", padding: "32px", maxWidth: 360, width: "90%", textAlign: "center", borderRadius: "var(--radius-md)" }}>
+                        <p style={{ fontFamily: "var(--font-serif)", fontSize: "1.3rem", fontWeight: 700, marginBottom: 8 }}>Sign in</p>
+                        <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", color: "var(--prada-gray)", marginBottom: 24 }}>
+                            Create a guest account to continue checkout.
+                        </p>
+                        <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+                            <button onClick={() => setShowGuestSignin(false)} className="btn-prada-outline">Cancel</button>
+                            <button onClick={handleGuestAcct} className="btn-prada-solid">Continue as Guest</button>
+                        </div>
                     </div>
                 </div>
             )}
 
+            {/* Main Product Layout */}
+            <div style={{ 
+                maxWidth: 1440, 
+                margin: "0 auto", 
+                padding: "40px clamp(20px, 4vw, 60px)",
+                display: "grid",
+                gridTemplateColumns: "minmax(0, 1.3fr) minmax(0, 1fr)",
+                gap: "clamp(40px, 6vw, 100px)",
+                alignItems: "start"
+            }} className="md:grid-cols-[1.3fr_1fr] grid-cols-1">
+                
+                {/* ── Left Column: Media Gallery ── */}
+                <div style={{ display: "flex", gap: "24px", height: "calc(100vh - 120px)", position: "sticky", top: "100px" }}>
+                    
+                    {/* Vertical Thumbnails */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "80px", flexShrink: 0 }}>
+                        <button onClick={handlePrevImage} style={{ background:"none", border:"none", cursor:"pointer", padding:"8px 0", color: "var(--prada-black)", opacity: 0.6 }} className="hover:opacity-100 transition-opacity">
+                            <FaAngleUp size={24} />
+                        </button>
+                        
+                        <div style={{ display: "flex", flexDirection: "column", gap: "10px", flex: 1, overflowY: "auto", scrollbarWidth: "none" }} className="hide-scrollbar">
+                           {product.img.map((img, idx) => (
+                               <button 
+                                  key={idx}
+                                  onClick={() => setSelectedImageIndex(idx)}
+                                  style={{
+                                      width: "100%", aspectRatio: "1/1",
+                                      background: "var(--prada-white)",
+                                      border: selectedImageIndex === idx ? "2px solid var(--prada-black)" : "1px solid var(--prada-border)",
+                                      padding: "8px",
+                                      borderRadius: "6px",
+                                      cursor: "pointer",
+                                      transition: "all 0.2s ease"
+                                  }}
+                                  className={selectedImageIndex !== idx ? "hover:border-gray-400" : ""}
+                               >
+                                   <img src={img} alt={`Thumbnail ${idx}`} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                               </button>
+                           ))}
+                        </div>
 
+                        <button onClick={handleNextImage} style={{ background:"none", border:"none", cursor:"pointer", padding:"8px 0", color: "var(--prada-black)", opacity: 0.6 }} className="hover:opacity-100 transition-opacity">
+                            <FaAngleDown size={24} />
+                        </button>
+                    </div>
 
-
-
-            <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12">
-                {/* Product Visual Section */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className="relative group"
-                >
-                    <div className="rounded-3xl p-8 relative overflow-hidden">
-                        {/* Main Image */}
-                        <motion.img
-                            src={selectedImage}
-                            alt={product.name}
-                            className="w-full h-96 object-contain transform transition-all duration-300 group-hover:scale-110"
-                        />
-
-                        {/* Expand Button */}
+                    {/* Main Stage */}
+                    <div style={{ 
+                        flex: 1, 
+                        background: "var(--prada-white)", 
+                        borderRadius: "16px",
+                        position: "relative",
+                        overflow: "hidden",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "40px",
+                        border: "1px solid rgba(0,0,0,0.03)"
+                    }}>
+                        <AnimatePresence mode="wait">
+                            <motion.img
+                                key={selectedImageIndex}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                transition={{ duration: 0.3 }}
+                                src={product.img[selectedImageIndex]}
+                                alt={product.name}
+                                style={{
+                                    width: "100%", height: "100%", objectFit: "contain",
+                                    maxHeight: "75vh"
+                                }}
+                            />
+                        </AnimatePresence>
+                        
                         <button
                             onClick={() => setIsFullScreenImage(true)}
-                            className="absolute top-4 right-4 bg-white/50 hover:bg-white/80 p-2 rounded-full transition"
+                            style={{
+                                position: "absolute", top: 16, right: 16,
+                                background: "var(--prada-white)", border: "1px solid var(--prada-border)",
+                                padding: "12px", borderRadius: "50%", cursor: "pointer",
+                                color: "var(--prada-black)", boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
+                            }}
+                            className="hover:bg-gray-50 transition-colors"
                         >
-                            <FaExpand className="text-blue-800" />
+                            <FaExpand />
                         </button>
-
-                        {/* Thumbnail Images - Made responsive */}
-                        <div className="flex flex-wrap justify-center gap-2 ">
-                            {product.img.map((img, index) => (
-                                <img
-                                    key={index}
-                                    src={img}
-                                    alt={`Thumbnail ${index}`}
-                                    className={`w-16 h-16 sm:w-20 sm:h-20 object-contain cursor-pointer rounded-lg border-2 transition ${selectedImage === img ? "border-blue-500 scale-105" : "border-gray-300"
-                                        }`}
-                                    onClick={() => setSelectedImage(img)}
-                                />
-                            ))}
-                        </div>
                     </div>
+                </div>
 
-                    {/* Color Selection */}
-                    <div className="flex justify-center mt-6 space-x-4">
-                        {product.colors.map((color) => (
-                            <button
-                                key={color._id}
-                                onClick={() => handleColorSelect(color)}
-                                className={`w-8 h-8 sm:w-8 sm:h-8 rounded-full border-4 transition-all duration-300 
-                               ${selectedColor === color.hex ? 'border-blue-500 scale-110' : 'hover:border-blue-300'}
-                               ${color.hex === '#FFFFFF' ? 'border-gray-400 shadow-md' : ''}`}
-                                style={{ backgroundColor: color.hex }}
-                                title={color.name}
-                            />
 
-                        ))}
-                    </div>
-                </motion.div>
-
-                {/* Product Details Section */}
-                <div className="space-y-6">
-                    <motion.div
-                        initial={{ x: 50, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: 0.2, duration: 0.5 }}
-                    ><h1 className="text-2xl sm:text-4xl font-black text-black mb-2">{product.name}</h1>
-
-                        <p className="text-xl text-black font-medium">{product.tagline}</p>
-                    </motion.div>
-
-                    {/* Price Section */}
-                    <div className="w-full p-6 rounded-xl border border-gray-200 shadow-sm bg-white space-y-6">
-
-                        {/* Price and Discount */}
-                        <div className="space-y-2">
-                            <div className="flex items-center space-x-3">
-                                <span className="text-3xl sm:text-4xl font-extrabold text-black">
-                                    PKR: {product.discountPrice}
-                                </span>
-                                <span className="text-xl text-gray-400 line-through">
-                                    PKR: {product.price}
-                                </span>
+                {/* ── Right Column: Sticky Product Info ── */}
+                <div style={{ paddingTop: "20px" }}>
+                    <div style={{
+                        background: "var(--prada-white)",
+                        borderRadius: "16px",
+                        padding: "clamp(24px, 4vw, 40px)",
+                        boxShadow: "0 10px 40px rgba(0,0,0,0.04)",
+                        position: "relative"
+                    }}>
+                        
+                        {/* SALE Badge */}
+                        {product.price > product.discountPrice && (
+                            <div style={{
+                                position: "absolute", top: -12, right: 32,
+                                background: "var(--brand-accent)", color: "#fff",
+                                padding: "6px 14px", borderRadius: "20px",
+                                fontFamily: "var(--font-sans)", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.05em"
+                            }}>
+                                SALE
                             </div>
-                            <span className="inline-block bg-green-100 text-green-800 px-3 py-1 text-sm rounded-full font-medium">
-                                Save PKR {(product.price - product.discountPrice).toFixed(2)}
+                        )}
+
+                        {/* Reviews summary */}
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+                            <div style={{ display: "flex", gap: "2px", color: "#000" }}>
+                                {Array(5).fill(0).map((_, i) => <span key={i}>★</span>)}
+                            </div>
+                            <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.8rem", color: "var(--prada-gray)", textDecoration: "underline", cursor:"pointer" }}>
+                                30 Reviews
                             </span>
                         </div>
 
-                        {/* Quantity Selector */}
-                        <div className="flex items-center space-x-4">
-                            <span className="text-black font-medium">Quantity:</span>
-                            <div className="flex items-center bg-blue-50 rounded-full overflow-hidden border border-blue-200">
-                                <button
-                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="px-4 py-2 text-blue-800 hover:bg-blue-200 transition font-bold"
-                                    disabled={product.stock <= 0}
-                                >
-                                    -
-                                </button>
-                                <span className="px-4 py-2 font-semibold">{quantity}</span>
-                                <button
-                                    onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                                    className="px-4 py-2 text-blue-800 hover:bg-blue-200 transition font-bold"
-                                    disabled={quantity >= product.stock || product.stock <= 0}
-                                >
-                                    +
-                                </button>
+                        {/* Title & Tagline */}
+                        <h1 style={{ fontFamily: "var(--font-serif)", fontSize: "clamp(2rem, 3vw, 2.5rem)", fontWeight: 800, color: "var(--prada-black)", margin: "0 0 8px", lineHeight: 1.1 }}>
+                            {product.name}
+                        </h1>
+                        <p style={{ fontFamily: "var(--font-sans)", fontSize: "1rem", color: "var(--prada-gray)", margin: "0 0 24px" }}>
+                            {product.tagline}
+                        </p>
+
+                        {/* Price */}
+                        <div style={{ display: "flex", alignItems: "baseline", gap: "16px", marginBottom: "32px" }}>
+                            <span style={{ fontFamily: "var(--font-sans)", fontSize: "2rem", fontWeight: 800, color: "var(--prada-black)" }}>
+                                Rs.{product.discountPrice?.toLocaleString()}
+                            </span>
+                            {product.price > product.discountPrice && (
+                                <span style={{ fontFamily: "var(--font-sans)", fontSize: "1.2rem", fontWeight: 600, color: "#BDBDBD", textDecoration: "line-through" }}>
+                                    Rs.{product.price?.toLocaleString()}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Color Selector */}
+                        {product.colors?.length > 0 && (
+                            <div style={{ marginBottom: "32px" }}>
+                                <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.9rem", fontWeight: 600, marginBottom: "12px", color: "var(--prada-black)" }}>
+                                    Color: <span style={{ fontWeight: 400, color: "var(--prada-gray)" }}>{product.colors.find(c => c.hex === selectedColor)?.name}</span>
+                                </p>
+                                <div style={{ display: "flex", gap: "12px" }}>
+                                    {product.colors.map(color => (
+                                        <button
+                                            key={color._id}
+                                            onClick={() => setSelectedColor(color.hex)}
+                                            style={{
+                                                width: "36px", height: "36px", borderRadius: "50%",
+                                                background: color.hex, cursor: "pointer",
+                                                border: "2px solid #fff",
+                                                outline: selectedColor === color.hex ? "2px solid var(--prada-black)" : "1px solid var(--prada-border)",
+                                                transition: "all 0.2s"
+                                            }}
+                                            className={selectedColor !== color.hex ? "hover:outline-gray-400" : ""}
+                                            title={color.name}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Fake Stock Indicator (Matches Waldor styling) */}
+                        <div style={{ marginBottom: "32px" }}>
+                            <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.9rem", fontWeight: 700, fontStyle: "italic", color: "var(--brand-accent)", marginBottom: "8px" }}>
+                                {product.stock > 0 ? `${Math.min(product.stock, 18)} in stock` : "Out of stock"}
+                            </p>
+                            <div style={{ height: "4px", background: "#E0E0E0", width: "100%", borderRadius: "2px", overflow: "hidden" }}>
+                                <div style={{ height: "100%", background: "#4CAF50", width: product.stock > 0 ? "70%" : "0%" }} />
                             </div>
                         </div>
 
-                        {/* Buttons */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                        {/* Action Buttons */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "32px" }}>
                             <button
                                 onClick={() => addToCart(product._id, false)}
-                                className="flex items-center justify-center bg-white border-2 border-black text-black py-3 rounded-xl hover:bg-blue-600 hover:text-white transition font-semibold"
                                 disabled={isAddingToCart || isBuyingNow || product.stock <= 0}
+                                style={{
+                                    width: "100%", padding: "18px", borderRadius: "8px",
+                                    background: "var(--prada-black)", color: "#fff",
+                                    fontFamily: "var(--font-sans)", fontSize: "1rem", fontWeight: 700,
+                                    border: "none", cursor: "pointer", transition: "all 0.2s",
+                                    opacity: (isAddingToCart || product.stock <= 0) ? 0.7 : 1
+                                }}
+                                className="hover:bg-gray-800"
                             >
-                                {isAddingToCart ? (
-                                    "Adding..."
-                                ) : (
-                                    <>
-                                        <FaShoppingCart className="mr-2" />
-                                        Add to Cart
-                                    </>
-                                )}
+                                {isAddingToCart ? "Adding..." : "Add To Cart"}
                             </button>
-
+                            
                             <button
                                 onClick={() => addToCart(product._id, true)}
-                                className="bg-black text-white py-3 rounded-xl hover:bg-blue-800 transition font-semibold"
                                 disabled={isAddingToCart || isBuyingNow || product.stock <= 0}
+                                style={{
+                                    width: "100%", padding: "18px", borderRadius: "8px",
+                                    background: "linear-gradient(to bottom, #f5f5f5, #e0e0e0)", color: "var(--prada-black)",
+                                    fontFamily: "var(--font-sans)", fontSize: "1rem", fontWeight: 700,
+                                    border: "1px solid #d4d4d4", cursor: "pointer", transition: "all 0.2s",
+                                    opacity: (isBuyingNow || product.stock <= 0) ? 0.7 : 1
+                                }}
+                                className="hover:bg-gray-300"
                             >
-                                {isBuyingNow ? "Processing..." : "Buy Now"}
+                                {isBuyingNow ? "Processing..." : "Buy It Now"}
                             </button>
                         </div>
-                    </div>
-
-
-                    {/* Features */}
-                    <div className="space-y-2">
-                        {product.features.map((feature, index) => (
-                            <div key={index} className="flex items-center text-black">
-                                <FaCheckCircle className="mr-2 text-black" />
-                                <span>{feature}</span>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Stock Information */}
-                    <div className="bg-blue-50 p-3 rounded-lg">
-                        <p className="text-blue-800">
-                            <FaCheckCircle className="inline mr-2" />
-                            {product.stock > 0 ? `In Stock (${product.stock} available)` : "Out of Stock"}
+                        
+                        {/* Features / Pitch */}
+                        <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.9rem", color: "var(--prada-black)", lineHeight: 1.6, marginBottom: "24px" }}>
+                            The simplicity paradox — do less, deliver more. {product.tagline} Perfects the user flow and integrates seamlessly into your daily carry.
                         </p>
+                        
+                        <a href="#product-details" style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", color: "var(--prada-black)", textDecoration: "underline", fontWeight: 600 }}>
+                            Show More
+                        </a>
                     </div>
-
-
                 </div>
             </div>
 
-            {/* Technical Specs Section */}
-            <div className="max-w-6xl mx-auto mt-16">
-                {renderTechnicalSpecs()}
+            <div id="product-details" style={{ padding: "40px 0" }} />
+
+            {/* Bottom Content Area */}
+            <div style={{ maxWidth: 1080, margin: "0 auto", padding: "0 clamp(20px, 4vw, 40px)" }}>
+                
+                {/* Product Overview & Specs Accordion style */}
+                <div style={{ background: "var(--prada-white)", borderRadius: "16px", padding: "40px", marginBottom: "60px", border: "1px solid var(--prada-border)" }}>
+                     <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "1.8rem", fontWeight: 700, marginBottom: "24px", color: "var(--prada-black)" }}>Features & Specs</h2>
+                     <p style={{ fontFamily: "var(--font-sans)", fontSize: "1rem", lineHeight: 1.6, color: "var(--prada-gray)", marginBottom: "32px" }}>
+                         {product.description}
+                     </p>
+                     
+                     {product.technicalSpecs && Object.keys(product.technicalSpecs).length > 0 && (
+                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "24px", borderTop: "1px solid var(--prada-border)", paddingTop: "32px" }}>
+                             {Object.entries(product.technicalSpecs).map(([key, value]) => (
+                                 <div key={key}>
+                                     <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", fontWeight: 700, color: "var(--prada-black)", textTransform: "capitalize", marginBottom: "4px" }}>
+                                         {key.replace(/([A-Z])/g, ' $1')}
+                                     </p>
+                                     <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.95rem", color: "var(--prada-gray)" }}>
+                                         {value}
+                                     </p>
+                                 </div>
+                             ))}
+                         </div>
+                     )}
+                </div>
+
+                {/* Reviews Section */}
+                <Reviews selectedProduct={product.name}/>
             </div>
 
-            {/* Product Description */}
-            <div className="max-w-6xl mx-auto mt-16 bg-white p-8 rounded-2xl shadow-lg">
-                <h2 className="text-3xl font-bold text-black mb-6">Product Overview</h2>
-                <p className="text-black text-lg leading-relaxed">{product.description}</p>
-            </div>
-
-            {/* Full Screen Image Modal - Fixed to show selected image */}
+            {/* Full Screen Image Modal */}
             {isFullScreenImage && (
-                <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+                <div style={{ position: "fixed", inset: 0, background: "rgba(255,255,255,0.98)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px" }}>
                     <button
-                        className="absolute top-4 right-4 text-white text-2xl"
+                        style={{ position: "absolute", top: 24, right: 24, background: "none", border: "none", fontSize: "2rem", cursor: "pointer", color: "var(--prada-black)" }}
                         onClick={() => setIsFullScreenImage(false)}
                     >
                         ×
                     </button>
                     <img
-                        src={selectedImage}
+                        src={product.img[selectedImageIndex]}
                         alt={product.name}
-                        className="max-w-full max-h-full object-contain"
+                        style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
                     />
                 </div>
             )}
-
-            {/* ratings and reviews */}
-            <Reviews selectedProduct={product.name}/>
         </div>
     );
 };
 
-export default EarbudsProductDisplay;
+export default ProductDisplay;

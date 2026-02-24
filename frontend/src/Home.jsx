@@ -6,27 +6,17 @@ import { TextScroll } from './components/ScrollText'
 
 const Home = () => {
     return (
-        <>
+        <div style={{ background: "var(--prada-off-white)", minHeight: "100vh" }}>
             <Carousel />
             <TextScroll />
-
             {/* Editorial Category Section */}
-            <Heading
-                heading="Explore"
-                subHeading="Shop by category"
-            />
+            <Heading heading="Explore" subHeading="Shop by category"/>
             <Explore />
-
-            {/* Thin divider */}
-            <div style={{ borderTop: "1px solid var(--prada-border)", margin: "0 clamp(20px,5vw,80px)" }} />
-
+            <div style={{ padding: "20px 0" }} />
             {/* Full Product Grid */}
-            <Heading
-                heading="The Collection"
-                subHeading="All products"
-            />
+            <Heading heading="The Collection" subHeading="All products" />
             <FeaturedProducts />
-        </>
+        </div>
     )
 }
 

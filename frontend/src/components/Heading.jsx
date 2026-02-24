@@ -11,9 +11,9 @@ const Heading = ({ heading, subHeading }) => {
       <h2
         style={{
           fontFamily: "var(--font-serif)",
-          fontSize: "clamp(1.6rem, 3.5vw, 2.6rem)",
-          fontWeight: 300,
-          letterSpacing: "0.18em",
+          fontSize: "clamp(2rem, 4vw, 3rem)",
+          fontWeight: 700,
+          letterSpacing: "0.05em",
           textTransform: "uppercase",
           color: "var(--prada-black)",
           margin: "0 0 16px",
@@ -22,23 +22,13 @@ const Heading = ({ heading, subHeading }) => {
         {heading}
       </h2>
 
-      {/* Thin centre line */}
-      <div
-        style={{
-          width: 40,
-          height: 1,
-          background: "var(--prada-black)",
-          margin: "0 auto 18px",
-        }}
-      />
-
       {subHeading && (
         <p
           style={{
             fontFamily: "var(--font-sans)",
-            fontSize: "0.7rem",
-            fontWeight: 400,
-            letterSpacing: "0.15em",
+            fontSize: "0.85rem",
+            fontWeight: 600,
+            letterSpacing: "0.1em",
             textTransform: "uppercase",
             color: "var(--prada-gray)",
             margin: 0,

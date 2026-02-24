@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import AlertMessage from "./Alert";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ProductCard = ({ product, loading }) => {
   const navigate = useNavigate();
@@ -65,34 +66,78 @@ const ProductCard = ({ product, loading }) => {
           position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
           display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200
         }}>
-          <div style={{ background: "#fff", padding: "32px", maxWidth: 360, width: "90%", textAlign: "center" }}>
-            <p style={{ fontFamily: "var(--font-serif)", fontSize: "1.3rem", marginBottom: 8 }}>Sign in to continue</p>
-            <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "var(--prada-gray)", marginBottom: 24, letterSpacing: "0.05em" }}>
+          <div style={{ background: "#fff", padding: "32px", maxWidth: 360, width: "90%", textAlign: "center", borderRadius: "16px" }}>
+            <p style={{ fontFamily: "var(--font-sans)", fontSize: "1.3rem", fontWeight: 700, marginBottom: 8 }}>Sign in</p>
+            <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", color: "var(--prada-gray)", marginBottom: 24 }}>
               Create a guest account to add items to your cart.
             </p>
             <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-              <button onClick={() => setShowGuestSignin(false)} className="btn-prada-outline">Cancel</button>
-              <button onClick={handleGuestAcct} className="btn-prada-solid">Continue as Guest</button>
+              <button onClick={() => setShowGuestSignin(false)} className="btn-prada-outline" style={{ borderRadius: "8px" }}>Cancel</button>
+              <button onClick={handleGuestAcct} className="btn-prada-solid" style={{ borderRadius: "8px" }}>Continue as Guest</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Card ── */}
+      {/* ── Main Rounded Card Container ── */}
       <div
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        style={{ cursor: "pointer", background: "var(--prada-white)" }}
+        style={{
+          background: "#f7f7f7",
+          borderRadius: "18px",
+          padding: "18px 18px 24px",
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          border: "1px solid #e2e2e2",
+          boxShadow: hovered ? "0 16px 40px rgba(0,0,0,0.12)" : "0 10px 22px rgba(0,0,0,0.05)",
+          transition: "box-shadow  0.28s ease, transform 0.28s ease",
+          transform: hovered ? "translateY(-4px)" : "translateY(0)"
+        }}
       >
+        {/* Discount badge - Red, rounded, bold top right of the whole card */}
+        {product.price > product.discountPrice && (
+          <span style={{
+            position: "absolute", top: 14, right: 14, zIndex: 10,
+            fontFamily: "var(--font-sans)", fontSize: "0.74rem",
+            fontWeight: 800, letterSpacing: "0.03em",
+            background: "#e53945",
+            color: "#fff",
+            padding: "4px 12px",
+            borderRadius: "999px",
+            boxShadow: "0 6px 16px rgba(229,57,69,0.25)"
+          }}>
+            SAVE {Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
+          </span>
+        )}
+
+        {/* Out of stock overlay */}
+        {product.stock <= 0 && (
+            <div style={{
+                position: "absolute", top: 16, left: 16, zIndex: 10,
+                background: "rgba(0,0,0,0.7)", color: "#fff",
+                padding: "4px 10px", borderRadius: "6px",
+                fontFamily: "var(--font-sans)", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase"
+            }}>
+                Sold Out
+            </div>
+        )}
+
         {/* Image container */}
-        <Link to={`/product/${product._id}`} style={{ display: "block", textDecoration: "none" }}>
+        <Link to={`/product/${product._id}`} style={{ display: "block", textDecoration: "none", flexGrow: 1 }}>
           <div
             style={{
               position: "relative",
               width: "100%",
-              aspectRatio: "3/4",
+              aspectRatio: "1/1",
               overflow: "hidden",
-              background: "var(--prada-off-white)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "#ffffff",
+              borderRadius: "14px",
+              border: "1px solid #ededed"
             }}
           >
             <img
@@ -100,151 +145,138 @@ const ProductCard = ({ product, loading }) => {
               alt={product.name}
               loading="lazy"
               style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                transition: "transform 0.65s cubic-bezier(0.25,0.46,0.45,0.94)",
-                transform: hovered ? "scale(1.05)" : "scale(1)",
+                width: "92%",
+                height: "92%",
+                objectFit: "contain",
+                transition: "transform 0.35s ease",
+                transform: hovered ? "scale(1.06)" : "scale(1)",
               }}
             />
-
-            {/* Discount badge */}
-            {product.price > product.discountPrice && (
-              <span style={{
-                position: "absolute", top: 12, left: 12,
-                fontFamily: "var(--font-sans)", fontSize: "0.58rem",
-                letterSpacing: "0.14em", fontWeight: 500,
-                background: "var(--prada-black)", color: "#fff",
-                padding: "3px 8px",
-              }}>
-                -{Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
-              </span>
-            )}
-
-            {/* Low stock */}
-            {product.stock <= 5 && product.stock > 0 && (
-              <span style={{
-                position: "absolute", bottom: 12, left: 12,
-                fontFamily: "var(--font-sans)", fontSize: "0.55rem",
-                letterSpacing: "0.15em", textTransform: "uppercase",
-                color: "var(--prada-gray)",
-              }}>
-                Only {product.stock} left
-              </span>
-            )}
-
-            {/* Out of stock overlay */}
-            {product.stock === 0 && (
-              <div style={{
-                position: "absolute", inset: 0,
-                background: "rgba(255,255,255,0.6)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.62rem", letterSpacing: "0.22em", textTransform: "uppercase" }}>
-                  Out of Stock
-                </span>
-              </div>
-            )}
-
-            {/* Hover Add to Cart */}
-            {product.stock > 0 && (
-              <div style={{
-                position: "absolute", bottom: 0, left: 0, right: 0,
-                padding: "14px 16px",
-                background: "rgba(255,255,255,0.85)",
-                transform: hovered ? "translateY(0)" : "translateY(100%)",
-                transition: "transform 0.35s ease",
-              }}>
-                <button
-                  onClick={(e) => { e.preventDefault(); addToCart(product._id); }}
-                  disabled={isAddingToCart}
-                  style={{
-                    display: "block",
-                    width: "100%",
-                    fontFamily: "var(--font-sans)",
-                    fontSize: "0.6rem",
-                    fontWeight: 500,
-                    letterSpacing: "0.22em",
-                    textTransform: "uppercase",
-                    color: "var(--prada-black)",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                    textUnderlineOffset: "4px",
-                    opacity: isAddingToCart ? 0.5 : 1,
-                  }}
-                >
-                  {isAddingToCart ? "Adding…" : "Add to Cart"}
-                </button>
-              </div>
-            )}
           </div>
         </Link>
 
         {/* Info below image */}
-        <div style={{ padding: "12px 0 20px" }}>
-          {product.category && (
-            <p className="text-luxury-label" style={{ marginBottom: 5 }}>{product.category}</p>
-          )}
+        <div style={{ paddingTop: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
+          
+          {/* Title */}
           <Link to={`/product/${product._id}`} style={{ textDecoration: "none", color: "inherit" }}>
             <h3 style={{
-              fontFamily: "var(--font-sans)",
-              fontSize: "0.82rem",
-              fontWeight: 400,
-              letterSpacing: "0.04em",
+              fontFamily: "var(--font-heading)",
+              fontSize: "1.08rem",
+              fontWeight: 800,
               color: "var(--prada-black)",
-              margin: "0 0 6px",
-              lineHeight: 1.4,
+              margin: 0,
+              lineHeight: 1.16,
               display: "-webkit-box",
-              WebkitLineClamp: 2,
+              WebkitLineClamp: 1,
               WebkitBoxOrient: "vertical",
               overflow: "hidden",
             }}>
               {product.name}
             </h3>
           </Link>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{
-              fontFamily: "var(--font-sans)",
-              fontSize: "0.78rem",
-              fontWeight: 400,
-              letterSpacing: "0.04em",
-              color: "var(--prada-black)",
-            }}>
-              PKR {product.discountPrice?.toLocaleString()}
-            </span>
+          
+          {/* Color Swatches */}
+          <div style={{ display: "flex", gap: "6px" }}>
+            {product.colors && product.colors.length > 0 ? (
+              product.colors.slice(0, 6).map((color, idx) => (
+                <span
+                  key={`${color.hex}-${idx}`}
+                  style={{
+                    width: "15px",
+                    height: "15px",
+                    borderRadius: "50%",
+                    background: color.hex,
+                    border: "2px solid #fff",
+                    outline: "1px solid #d0d0d0",
+                    boxShadow: "0 2px 5px rgba(0,0,0,0.06)"
+                  }}
+                />
+              ))
+            ) : (
+              <>
+                <span style={{ width: "15px", height: "15px", borderRadius: "50%", background: "#a5673f", border: "2px solid #fff", outline: "1px solid #cfcfcf" }} />
+                <span style={{ width: "15px", height: "15px", borderRadius: "50%", background: "#2f4a5f", border: "2px solid #fff", outline: "1px solid #cfcfcf" }} />
+                <span style={{ width: "15px", height: "15px", borderRadius: "50%", background: "#0f0f0f", border: "2px solid #fff", outline: "1px solid #cfcfcf" }} />
+                <span style={{ width: "15px", height: "15px", borderRadius: "50%", background: "#0d5c45", border: "2px solid #fff", outline: "1px solid #cfcfcf" }} />
+              </>
+            )}
+          </div>
+
+          {/* Pricing */}
+          <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "2px" }}>
             {product.price > product.discountPrice && (
               <span style={{
                 fontFamily: "var(--font-sans)",
-                fontSize: "0.72rem",
-                color: "var(--prada-mid-gray)",
+                fontSize: "0.92rem",
+                fontWeight: 700,
+                color: "#9c9c9c",
                 textDecoration: "line-through",
-                letterSpacing: "0.02em",
               }}>
-                PKR {product.price?.toLocaleString()}
+                Rs.{product.price?.toLocaleString()}
               </span>
             )}
+            <span style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: "1.08rem",
+              fontWeight: 900,
+              color: "#0f0f0f",
+            }}>
+              Rs.{product.discountPrice?.toLocaleString()}
+            </span>
           </div>
         </div>
+        
+        {/* Hover Quick Add to Cart Button */}
+        <AnimatePresence>
+            {hovered && product.stock > 0 && (
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.2 }}
+                    style={{ position: "absolute", bottom: "16px", left: "16px", right: "16px" }}
+                >
+                    <button
+                        onClick={(e) => { e.preventDefault(); addToCart(product._id); }}
+                        disabled={isAddingToCart}
+                        style={{
+                            width: "100%", padding: "12px", borderRadius: "8px",
+                            background: "var(--prada-black)", color: "#fff",
+                            fontFamily: "var(--font-sans)", fontSize: "0.9rem", fontWeight: 700,
+                            border: "none", cursor: "pointer",
+                            boxShadow: "0 6px 16px rgba(0,0,0,0.15)"
+                        }}
+                    >
+                        {isAddingToCart ? "Adding..." : "Add to Cart"}
+                    </button>
+                </motion.div>
+            )}
+        </AnimatePresence>
+
       </div>
     </>
   );
 };
 
 const SkeletonCard = () => (
-  <div style={{ background: "var(--prada-white)" }}>
+   <div style={{ 
+       background: "var(--prada-off-white)", 
+       borderRadius: "16px", 
+       padding: "16px",
+       height: "360px",
+       display: "flex", flexDirection: "column"
+   }}>
     <div style={{
-      width: "100%", aspectRatio: "3/4",
+      width: "100%", flexGrow: 1,
       background: "var(--prada-light-gray)",
+      borderRadius: "8px",
       animation: "pulse 1.8s ease-in-out infinite",
+      marginBottom: "16px"
     }} />
-    <div style={{ padding: "12px 0 20px" }}>
-      <div style={{ height: 8, width: "40%", background: "var(--prada-light-gray)", marginBottom: 10, animation: "pulse 1.8s ease-in-out infinite" }} />
-      <div style={{ height: 10, width: "85%", background: "var(--prada-light-gray)", marginBottom: 6, animation: "pulse 1.8s ease-in-out infinite" }} />
-      <div style={{ height: 10, width: "55%", background: "var(--prada-light-gray)", animation: "pulse 1.8s ease-in-out infinite" }} />
-    </div>
-    <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }`}</style>
+    <div style={{ height: 20, width: "70%", background: "var(--prada-light-gray)", marginBottom: 12, borderRadius: "4px", animation: "pulse 1.8s ease-in-out infinite" }} />
+    <div style={{ height: 16, width: "30%", background: "var(--prada-light-gray)", borderRadius: "4px", animation: "pulse 1.8s ease-in-out infinite" }} />
+    <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }`}</style>
   </div>
 );
 

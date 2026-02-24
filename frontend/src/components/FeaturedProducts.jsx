@@ -6,7 +6,7 @@ import ProductCard from "./ProductCard";
 const SORT_OPTIONS = [
   { value: "newest",     label: "New In"         },
   { value: "price-low",  label: "Price: Low–High" },
-  { value: "price-high", label: "Price: High–Low" },
+  { value: "price-high",  label: "Price: High–Low" },
   { value: "popular",    label: "Top Rated"       },
 ];
 
@@ -75,7 +75,7 @@ const FeaturedProducts = () => {
   }, [products, sortBy]);
 
   return (
-    <section style={{ padding: "0 clamp(20px, 5vw, 80px) 80px", background: "var(--prada-white)" }}>
+    <section style={{ padding: "0 clamp(20px, 5vw, 80px) 80px", background: "var(--prada-off-white)" }}>
       {globalAlert.message && (
         <div style={{ marginBottom: 24 }}>
           <AlertMessage message={globalAlert.message} type={globalAlert.type} onClose={() => setGlobalAlert({ message: "", type: "" })} />
@@ -84,9 +84,9 @@ const FeaturedProducts = () => {
 
       {showGuestSign && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200 }}>
-          <div style={{ background: "#fff", padding: 32, maxWidth: 360, width: "90%", textAlign: "center" }}>
-            <p style={{ fontFamily: "var(--font-serif)", fontSize: "1.3rem", marginBottom: 8 }}>Sign in to continue</p>
-            <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "var(--prada-gray)", marginBottom: 24, letterSpacing: "0.05em" }}>
+          <div style={{ background: "#fff", padding: 32, maxWidth: 360, width: "90%", textAlign: "center", borderRadius: "var(--radius-md)" }}>
+            <p style={{ fontFamily: "var(--font-serif)", fontSize: "1.3rem", fontWeight: 700, marginBottom: 8 }}>Sign in</p>
+            <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", color: "var(--prada-gray)", marginBottom: 24 }}>
               Create a guest account to add items to your cart.
             </p>
             <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
@@ -102,33 +102,33 @@ const FeaturedProducts = () => {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        paddingBottom: 28,
-        borderBottom: "1px solid var(--prada-border)",
+        paddingBottom: 24,
         marginBottom: 36,
-        maxWidth: 1200,
+        maxWidth: 1440,
         margin: "0 auto 36px",
       }}>
-        <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.65rem", letterSpacing: "0.12em", color: "var(--prada-gray)", textTransform: "uppercase" }}>
-          {sortedProducts.length} Items
+        <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", fontWeight: 600, letterSpacing: "0.05em", color: "var(--prada-gray)", textTransform: "uppercase" }}>
+          {sortedProducts.length} Items Selected
         </span>
-        <div style={{ display: "flex", gap: 28 }}>
+        <div style={{ display: "flex", gap: "24px", alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", fontWeight: 600, color: "var(--prada-black)", marginRight: "8px" }}>Sort By:</span>
           {SORT_OPTIONS.map(opt => (
             <button
               key={opt.value}
               onClick={() => setSortBy(opt.value)}
               style={{
                 fontFamily: "var(--font-sans)",
-                fontSize: "0.62rem",
-                fontWeight: sortBy === opt.value ? 500 : 400,
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
+                fontSize: "0.85rem",
+                fontWeight: sortBy === opt.value ? 700 : 500,
+                letterSpacing: "0.05em",
                 color: sortBy === opt.value ? "var(--prada-black)" : "var(--prada-gray)",
                 background: "none",
                 border: "none",
-                borderBottom: sortBy === opt.value ? "1px solid var(--prada-black)" : "1px solid transparent",
-                paddingBottom: 2,
                 cursor: "pointer",
-                transition: "all 0.2s",
+                transition: "color 0.2s",
+                padding: "4px 8px",
+                borderRadius: "4px",
+                backgroundColor: sortBy === opt.value ? "rgba(0,0,0,0.05)" : "transparent",
               }}
             >
               {opt.label}
@@ -138,18 +138,20 @@ const FeaturedProducts = () => {
       </div>
 
       {error && (
-        <p style={{ textAlign: "center", fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "var(--prada-gray)", letterSpacing: "0.1em", marginBottom: 40 }}>
+        <p style={{ textAlign: "center", fontFamily: "var(--font-sans)", fontSize: "0.85rem", color: "var(--prada-gray)", fontWeight: "600", marginBottom: 40 }}>
           {error}
         </p>
       )}
 
       {/* Product Grid */}
-      <div style={{
-        maxWidth: 1200,
+      <div 
+      
+      style={{
+        maxWidth: 1440,
         margin: "0 auto",
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-        gap: "clamp(24px, 3vw, 48px) clamp(12px, 2vw, 28px)",
+        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+        gap: "clamp(24px, 3vw, 40px)",
       }}>
         {loading
           ? Array.from({ length: 8 }).map((_, i) => <ProductCard key={`sk-${i}`} loading />)
@@ -159,7 +161,7 @@ const FeaturedProducts = () => {
               ))
             : (
               <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "60px 0" }}>
-                <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.7rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--prada-gray)" }}>
+                <p style={{ fontFamily: "var(--font-sans)", fontSize: "1rem", fontWeight: "600", textTransform: "uppercase", color: "var(--prada-gray)" }}>
                   No products available
                 </p>
               </div>
