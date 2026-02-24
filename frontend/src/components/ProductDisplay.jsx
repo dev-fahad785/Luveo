@@ -110,87 +110,56 @@ const ProductDisplay = () => {
     const discountPercentage = Math.round(((product.price - product.discountPrice) / product.price) * 100);
 
     return (
-        <div style={{ background: "var(--prada-off-white)", minHeight: "100vh", paddingBottom: "80px" }}>
-            
+        <div className="bg-[#f7f7f7] min-h-screen pb-20">
             {/* Alerts & Modals */}
             {alertProps.visible && (
                 <AlertMessage message={alertProps.message} type={alertProps.type} onClose={handleCloseAlert} duration={4000} showCloseButton />
             )}
-            
+
             {showGuestSign && (
-                <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200 }}>
-                    <div style={{ background: "#fff", padding: "32px", maxWidth: 360, width: "90%", textAlign: "center", borderRadius: "var(--radius-md)" }}>
-                        <p style={{ fontFamily: "var(--font-serif)", fontSize: "1.3rem", fontWeight: 700, marginBottom: 8 }}>Sign in</p>
-                        <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", color: "var(--prada-gray)", marginBottom: 24 }}>
-                            Create a guest account to continue checkout.
-                        </p>
-                        <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-                            <button onClick={() => setShowGuestSignin(false)} className="btn-prada-outline">Cancel</button>
-                            <button onClick={handleGuestAcct} className="btn-prada-solid">Continue as Guest</button>
+                <div className="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center">
+                    <div className="bg-white px-8 py-8 max-w-[360px] w-[90%] text-center rounded-2xl shadow-xl">
+                        <p className="font-serif text-[1.3rem] font-bold mb-2">Sign in</p>
+                        <p className="font-sans text-sm text-[#6c6c6c] mb-6">Create a guest account to continue checkout.</p>
+                        <div className="flex justify-center gap-3">
+                            <button onClick={() => setShowGuestSignin(false)} className="rounded-lg border border-[#0f0f0f] px-4 py-2 font-sans text-sm font-semibold text-[#0f0f0f] hover:bg-[#0f0f0f] hover:text-white transition">Cancel</button>
+                            <button onClick={handleGuestAcct} className="rounded-lg bg-[#0f0f0f] px-4 py-2 font-sans text-sm font-semibold text-white hover:bg-[#1a1a1a] transition">Continue as Guest</button>
                         </div>
                     </div>
                 </div>
             )}
 
             {/* Main Product Layout */}
-            <div style={{ 
-                maxWidth: 1440, 
-                margin: "0 auto", 
-                padding: "40px clamp(20px, 4vw, 60px)",
-                display: "grid",
-                gridTemplateColumns: "minmax(0, 1.3fr) minmax(0, 1fr)",
-                gap: "clamp(40px, 6vw, 100px)",
-                alignItems: "start"
-            }} className="md:grid-cols-[1.3fr_1fr] grid-cols-1">
-                
+            <div className="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-[1.3fr_1fr] gap-[clamp(40px,6vw,100px)] px-[clamp(20px,4vw,60px)] py-10 items-start">
+
                 {/* ── Left Column: Media Gallery ── */}
-                <div style={{ display: "flex", gap: "24px", height: "calc(100vh - 120px)", position: "sticky", top: "100px" }}>
-                    
+                <div className="flex gap-6 h-[calc(100vh-120px)] sticky top-24">
+
                     {/* Vertical Thumbnails */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "80px", flexShrink: 0 }}>
-                        <button onClick={handlePrevImage} style={{ background:"none", border:"none", cursor:"pointer", padding:"8px 0", color: "var(--prada-black)", opacity: 0.6 }} className="hover:opacity-100 transition-opacity">
+                    <div className="flex flex-col gap-3 w-20 flex-shrink-0">
+                        <button onClick={handlePrevImage} className="bg-transparent border-none cursor-pointer py-2 text-[#0f0f0f] opacity-60 hover:opacity-100 transition-opacity">
                             <FaAngleUp size={24} />
                         </button>
-                        
-                        <div style={{ display: "flex", flexDirection: "column", gap: "10px", flex: 1, overflowY: "auto", scrollbarWidth: "none" }} className="hide-scrollbar">
+
+                        <div className="flex flex-col gap-2.5 flex-1 overflow-y-auto hide-scrollbar">
                            {product.img.map((img, idx) => (
                                <button 
                                   key={idx}
                                   onClick={() => setSelectedImageIndex(idx)}
-                                  style={{
-                                      width: "100%", aspectRatio: "1/1",
-                                      background: "var(--prada-white)",
-                                      border: selectedImageIndex === idx ? "2px solid var(--prada-black)" : "1px solid var(--prada-border)",
-                                      padding: "8px",
-                                      borderRadius: "6px",
-                                      cursor: "pointer",
-                                      transition: "all 0.2s ease"
-                                  }}
-                                  className={selectedImageIndex !== idx ? "hover:border-gray-400" : ""}
+                                  className={`w-full aspect-square bg-white p-2 rounded-md transition border ${selectedImageIndex === idx ? "border-[#0f0f0f]" : "border-[#e5e5e5] hover:border-gray-400"}`}
                                >
-                                   <img src={img} alt={`Thumbnail ${idx}`} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                                   <img src={img} alt={`Thumbnail ${idx}`} className="w-full h-full object-contain" />
                                </button>
                            ))}
                         </div>
 
-                        <button onClick={handleNextImage} style={{ background:"none", border:"none", cursor:"pointer", padding:"8px 0", color: "var(--prada-black)", opacity: 0.6 }} className="hover:opacity-100 transition-opacity">
+                        <button onClick={handleNextImage} className="bg-transparent border-none cursor-pointer py-2 text-[#0f0f0f] opacity-60 hover:opacity-100 transition-opacity">
                             <FaAngleDown size={24} />
                         </button>
                     </div>
 
                     {/* Main Stage */}
-                    <div style={{ 
-                        flex: 1, 
-                        background: "var(--prada-white)", 
-                        borderRadius: "16px",
-                        position: "relative",
-                        overflow: "hidden",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        padding: "40px",
-                        border: "1px solid rgba(0,0,0,0.03)"
-                    }}>
+                    <div className="flex-1 bg-white rounded-2xl relative overflow-hidden flex items-center justify-center p-10 border border-black/5">
                         <AnimatePresence mode="wait">
                             <motion.img
                                 key={selectedImageIndex}
@@ -200,22 +169,13 @@ const ProductDisplay = () => {
                                 transition={{ duration: 0.3 }}
                                 src={product.img[selectedImageIndex]}
                                 alt={product.name}
-                                style={{
-                                    width: "100%", height: "100%", objectFit: "contain",
-                                    maxHeight: "75vh"
-                                }}
+                                className="w-full h-full object-contain max-h-[75vh]"
                             />
                         </AnimatePresence>
-                        
+
                         <button
                             onClick={() => setIsFullScreenImage(true)}
-                            style={{
-                                position: "absolute", top: 16, right: 16,
-                                background: "var(--prada-white)", border: "1px solid var(--prada-border)",
-                                padding: "12px", borderRadius: "50%", cursor: "pointer",
-                                color: "var(--prada-black)", boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
-                            }}
-                            className="hover:bg-gray-50 transition-colors"
+                            className="absolute top-4 right-4 bg-white border border-[#e5e5e5] p-3 rounded-full text-[#0f0f0f] shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:bg-gray-50 transition"
                         >
                             <FaExpand />
                         </button>
@@ -224,52 +184,41 @@ const ProductDisplay = () => {
 
 
                 {/* ── Right Column: Sticky Product Info ── */}
-                <div style={{ paddingTop: "20px" }}>
-                    <div style={{
-                        background: "var(--prada-white)",
-                        borderRadius: "16px",
-                        padding: "clamp(24px, 4vw, 40px)",
-                        boxShadow: "0 10px 40px rgba(0,0,0,0.04)",
-                        position: "relative"
-                    }}>
-                        
+                <div className="pt-5">
+                    <div className="bg-white rounded-2xl px-[clamp(24px,4vw,40px)] py-[clamp(24px,4vw,40px)] shadow-[0_10px_40px_rgba(0,0,0,0.04)] relative">
+
                         {/* SALE Badge */}
                         {product.price > product.discountPrice && (
-                            <div style={{
-                                position: "absolute", top: -12, right: 32,
-                                background: "var(--brand-accent)", color: "#fff",
-                                padding: "6px 14px", borderRadius: "20px",
-                                fontFamily: "var(--font-sans)", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.05em"
-                            }}>
+                            <div className="absolute -top-3 right-8 bg-[#e53945] text-white px-3.5 py-1.5 rounded-full font-sans text-sm font-bold tracking-[0.05em]">
                                 SALE
                             </div>
                         )}
 
                         {/* Reviews summary */}
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
-                            <div style={{ display: "flex", gap: "2px", color: "#000" }}>
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="flex gap-0.5 text-black text-base">
                                 {Array(5).fill(0).map((_, i) => <span key={i}>★</span>)}
                             </div>
-                            <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.8rem", color: "var(--prada-gray)", textDecoration: "underline", cursor:"pointer" }}>
+                            <span className="font-sans text-xs text-[#7a7a7a] underline cursor-pointer">
                                 30 Reviews
                             </span>
                         </div>
 
                         {/* Title & Tagline */}
-                        <h1 style={{ fontFamily: "var(--font-serif)", fontSize: "clamp(2rem, 3vw, 2.5rem)", fontWeight: 800, color: "var(--prada-black)", margin: "0 0 8px", lineHeight: 1.1 }}>
+                        <h1 className="font-serif text-[clamp(2rem,3vw,2.5rem)] font-extrabold text-[#0f0f0f] mb-2 leading-tight">
                             {product.name}
                         </h1>
-                        <p style={{ fontFamily: "var(--font-sans)", fontSize: "1rem", color: "var(--prada-gray)", margin: "0 0 24px" }}>
+                        <p className="font-sans text-base text-[#7a7a7a] mb-6">
                             {product.tagline}
                         </p>
 
                         {/* Price */}
-                        <div style={{ display: "flex", alignItems: "baseline", gap: "16px", marginBottom: "32px" }}>
-                            <span style={{ fontFamily: "var(--font-sans)", fontSize: "2rem", fontWeight: 800, color: "var(--prada-black)" }}>
+                        <div className="flex items-baseline gap-4 mb-8">
+                            <span className="font-sans text-3xl font-extrabold text-[#0f0f0f]">
                                 Rs.{product.discountPrice?.toLocaleString()}
                             </span>
                             {product.price > product.discountPrice && (
-                                <span style={{ fontFamily: "var(--font-sans)", fontSize: "1.2rem", fontWeight: 600, color: "#BDBDBD", textDecoration: "line-through" }}>
+                                <span className="font-sans text-xl font-semibold text-[#bdbdbd] line-through">
                                     Rs.{product.price?.toLocaleString()}
                                 </span>
                             )}
@@ -277,23 +226,17 @@ const ProductDisplay = () => {
 
                         {/* Color Selector */}
                         {product.colors?.length > 0 && (
-                            <div style={{ marginBottom: "32px" }}>
-                                <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.9rem", fontWeight: 600, marginBottom: "12px", color: "var(--prada-black)" }}>
-                                    Color: <span style={{ fontWeight: 400, color: "var(--prada-gray)" }}>{product.colors.find(c => c.hex === selectedColor)?.name}</span>
+                            <div className="mb-8">
+                                <p className="font-sans text-sm font-semibold mb-3 text-[#0f0f0f]">
+                                    Color: <span className="font-normal text-[#7a7a7a]">{product.colors.find(c => c.hex === selectedColor)?.name}</span>
                                 </p>
-                                <div style={{ display: "flex", gap: "12px" }}>
+                                <div className="flex gap-3">
                                     {product.colors.map(color => (
                                         <button
                                             key={color._id}
                                             onClick={() => setSelectedColor(color.hex)}
-                                            style={{
-                                                width: "36px", height: "36px", borderRadius: "50%",
-                                                background: color.hex, cursor: "pointer",
-                                                border: "2px solid #fff",
-                                                outline: selectedColor === color.hex ? "2px solid var(--prada-black)" : "1px solid var(--prada-border)",
-                                                transition: "all 0.2s"
-                                            }}
-                                            className={selectedColor !== color.hex ? "hover:outline-gray-400" : ""}
+                                            className={`w-9 h-9 rounded-full border-2 border-white transition outline ${selectedColor === color.hex ? "outline-2 outline-[#0f0f0f]" : "outline-1 outline-[#e5e5e5] hover:outline-gray-400"}`}
+                                            style={{ background: color.hex }}
                                             title={color.name}
                                         />
                                     ))}
@@ -302,28 +245,21 @@ const ProductDisplay = () => {
                         )}
 
                         {/* Fake Stock Indicator (Matches Waldor styling) */}
-                        <div style={{ marginBottom: "32px" }}>
-                            <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.9rem", fontWeight: 700, fontStyle: "italic", color: "var(--brand-accent)", marginBottom: "8px" }}>
+                        <div className="mb-8">
+                            <p className="font-sans text-sm font-bold italic text-[#e53945] mb-2">
                                 {product.stock > 0 ? `${Math.min(product.stock, 18)} in stock` : "Out of stock"}
                             </p>
-                            <div style={{ height: "4px", background: "#E0E0E0", width: "100%", borderRadius: "2px", overflow: "hidden" }}>
-                                <div style={{ height: "100%", background: "#4CAF50", width: product.stock > 0 ? "70%" : "0%" }} />
+                            <div className="h-1 bg-[#e0e0e0] w-full rounded overflow-hidden">
+                                <div className={`h-full bg-[#4CAF50] ${product.stock > 0 ? "w-[70%]" : "w-0"}`} />
                             </div>
                         </div>
 
                         {/* Action Buttons */}
-                        <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "32px" }}>
+                        <div className="flex flex-col gap-4 mb-8">
                             <button
                                 onClick={() => addToCart(product._id, false)}
                                 disabled={isAddingToCart || isBuyingNow || product.stock <= 0}
-                                style={{
-                                    width: "100%", padding: "18px", borderRadius: "8px",
-                                    background: "var(--prada-black)", color: "#fff",
-                                    fontFamily: "var(--font-sans)", fontSize: "1rem", fontWeight: 700,
-                                    border: "none", cursor: "pointer", transition: "all 0.2s",
-                                    opacity: (isAddingToCart || product.stock <= 0) ? 0.7 : 1
-                                }}
-                                className="hover:bg-gray-800"
+                                className="w-full py-4 rounded-lg bg-[#0f0f0f] text-white font-sans text-base font-bold transition hover:bg-[#1a1a1a] disabled:opacity-70 disabled:cursor-not-allowed"
                             >
                                 {isAddingToCart ? "Adding..." : "Add To Cart"}
                             </button>
@@ -331,51 +267,44 @@ const ProductDisplay = () => {
                             <button
                                 onClick={() => addToCart(product._id, true)}
                                 disabled={isAddingToCart || isBuyingNow || product.stock <= 0}
-                                style={{
-                                    width: "100%", padding: "18px", borderRadius: "8px",
-                                    background: "linear-gradient(to bottom, #f5f5f5, #e0e0e0)", color: "var(--prada-black)",
-                                    fontFamily: "var(--font-sans)", fontSize: "1rem", fontWeight: 700,
-                                    border: "1px solid #d4d4d4", cursor: "pointer", transition: "all 0.2s",
-                                    opacity: (isBuyingNow || product.stock <= 0) ? 0.7 : 1
-                                }}
-                                className="hover:bg-gray-300"
+                                className="w-full py-4 rounded-lg bg-gradient-to-b from-[#f5f5f5] to-[#e0e0e0] text-[#0f0f0f] font-sans text-base font-bold border border-[#d4d4d4] transition hover:from-[#ebebeb] hover:to-[#d5d5d5] disabled:opacity-70 disabled:cursor-not-allowed"
                             >
                                 {isBuyingNow ? "Processing..." : "Buy It Now"}
                             </button>
                         </div>
                         
                         {/* Features / Pitch */}
-                        <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.9rem", color: "var(--prada-black)", lineHeight: 1.6, marginBottom: "24px" }}>
+                        <p className="font-sans text-sm text-[#0f0f0f] leading-6 mb-6">
                             The simplicity paradox — do less, deliver more. {product.tagline} Perfects the user flow and integrates seamlessly into your daily carry.
                         </p>
                         
-                        <a href="#product-details" style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", color: "var(--prada-black)", textDecoration: "underline", fontWeight: 600 }}>
+                        <a href="#product-details" className="font-sans text-sm text-[#0f0f0f] underline font-semibold">
                             Show More
                         </a>
                     </div>
                 </div>
             </div>
 
-            <div id="product-details" style={{ padding: "40px 0" }} />
+            <div id="product-details" className="py-10" />
 
             {/* Bottom Content Area */}
-            <div style={{ maxWidth: 1080, margin: "0 auto", padding: "0 clamp(20px, 4vw, 40px)" }}>
+            <div className="max-w-[1080px] mx-auto px-[clamp(20px,4vw,40px)]">
                 
                 {/* Product Overview & Specs Accordion style */}
-                <div style={{ background: "var(--prada-white)", borderRadius: "16px", padding: "40px", marginBottom: "60px", border: "1px solid var(--prada-border)" }}>
-                     <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "1.8rem", fontWeight: 700, marginBottom: "24px", color: "var(--prada-black)" }}>Features & Specs</h2>
-                     <p style={{ fontFamily: "var(--font-sans)", fontSize: "1rem", lineHeight: 1.6, color: "var(--prada-gray)", marginBottom: "32px" }}>
+                <div className="bg-white rounded-2xl p-10 mb-14 border border-[#e5e5e5]">
+                     <h2 className="font-serif text-[1.8rem] font-bold mb-6 text-[#0f0f0f]">Features & Specs</h2>
+                     <p className="font-sans text-base leading-7 text-[#7a7a7a] mb-8">
                          {product.description}
                      </p>
                      
                      {product.technicalSpecs && Object.keys(product.technicalSpecs).length > 0 && (
-                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "24px", borderTop: "1px solid var(--prada-border)", paddingTop: "32px" }}>
+                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 border-t border-[#e5e5e5] pt-8">
                              {Object.entries(product.technicalSpecs).map(([key, value]) => (
                                  <div key={key}>
-                                     <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", fontWeight: 700, color: "var(--prada-black)", textTransform: "capitalize", marginBottom: "4px" }}>
+                                     <p className="font-sans text-xs font-bold text-[#0f0f0f] capitalize mb-1">
                                          {key.replace(/([A-Z])/g, ' $1')}
                                      </p>
-                                     <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.95rem", color: "var(--prada-gray)" }}>
+                                     <p className="font-sans text-sm text-[#7a7a7a]">
                                          {value}
                                      </p>
                                  </div>
@@ -390,9 +319,9 @@ const ProductDisplay = () => {
 
             {/* Full Screen Image Modal */}
             {isFullScreenImage && (
-                <div style={{ position: "fixed", inset: 0, background: "rgba(255,255,255,0.98)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px" }}>
+                <div className="fixed inset-0 bg-white/95 z-[1000] flex items-center justify-center p-10">
                     <button
-                        style={{ position: "absolute", top: 24, right: 24, background: "none", border: "none", fontSize: "2rem", cursor: "pointer", color: "var(--prada-black)" }}
+                        className="absolute top-6 right-6 bg-transparent border-none text-3xl cursor-pointer text-[#0f0f0f]"
                         onClick={() => setIsFullScreenImage(false)}
                     >
                         ×
@@ -400,7 +329,7 @@ const ProductDisplay = () => {
                     <img
                         src={product.img[selectedImageIndex]}
                         alt={product.name}
-                        style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+                        className="max-w-full max-h-full object-contain"
                     />
                 </div>
             )}
