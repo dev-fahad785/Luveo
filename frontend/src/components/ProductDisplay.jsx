@@ -1,68 +1,54 @@
-
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import Reviews from "./random/Reviews"; // Import the Reviews component
-// import logo from "../images/logo.png";
-
-{/* <AlertMessage logoUrl={logo} /> */ }
-
-import {
-    FaShoppingCart,
-    FaBolt,
-    FaCheckCircle,
-    FaExpand
-} from 'react-icons/fa';
-import { motion } from 'framer-motion';
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { useParams } from "react-router-dom";
-import AlertMessage from "./Alert"; // Import the AlertMessage component
-// import DynamicProductSchema from "./DynamicProductScheme";
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaShoppingCart, FaExpand, FaCheck, FaAngleUp, FaAngleDown } from 'react-icons/fa';
 
-const EarbudsProductDisplay = () => {
+import Reviews from "./random/Reviews";
+import AlertMessage from "./Alert";
+
+const ProductDisplay = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
+
     const [product, setProduct] = useState(null);
-    const [selectedColor, setSelectedColor] = useState('black');
+    const [selectedColor, setSelectedColor] = useState(null);
     const [quantity, setQuantity] = useState(1);
-    // const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
     const [isFullScreenImage, setIsFullScreenImage] = useState(false);
+    
+    // Status states
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userId, setUserId] = useState(null);
     const [isAddingToCart, setIsAddingToCart] = useState(false);
     const [isBuyingNow, setIsBuyingNow] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null); // Initialize as null
-    const [showGuestSign, setShowGuestSignin] = useState(false)
-
-    const navigate = useNavigate();
-
+    
+    // Image gallery state
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0); 
+    const [showGuestSign, setShowGuestSignin] = useState(false);
+    
     // Alert state
-    const [alertProps, setAlertProps] = useState({
-        message: "",
-        type: "success",
-        visible: false
-    });
+    const [alertProps, setAlertProps] = useState({ message: "", type: "success", visible: false });
 
+    // Initialize user
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
-        if (!storedUser) {
-            console.log("No user found in localStorage");
-            return;
+        if (storedUser) {
+            try {
+                const user = JSON.parse(storedUser);
+                setUserId(user?.id || "");
+            } catch (e) { console.error(e); }
         }
-
-        const user = JSON.parse(storedUser);
-        setUserId(user?.id || "");
     }, []);
 
+    // Fetch product
     const getProduct = useCallback(async () => {
         try {
             setLoading(true);
             const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/product/get-product/${id}`);
-            console.log("Product fetched successfully");
-            console.log(response.data.product);
             const productData = response.data.product;
             setProduct(productData);
-            // Set the default selected image after fetching the product
-            setSelectedImage(productData.img[0]);
+            if(productData.colors?.length > 0) setSelectedColor(productData.colors[0].hex);
             setLoading(false);
         } catch (error) {
             console.error("Error fetching product:", error);
@@ -71,364 +57,284 @@ const EarbudsProductDisplay = () => {
         }
     }, [id]);
 
-    useEffect(() => {
-        if (id) {
-            getProduct();
-        }
-    }, [id, getProduct]);
+    useEffect(() => { if (id) getProduct(); }, [id, getProduct]);
 
-    const handleColorSelect = (color) => {
-        setSelectedColor(color.hex);
-    };
+    // Helpers
+    const showNotification = (message, type = "success") => setAlertProps({ message, type, visible: true });
+    const handleCloseAlert = () => setAlertProps(prev => ({ ...prev, visible: false }));
 
-    // Updated showNotification function to use AlertMessage
-    const showNotification = (message, type = "success") => {
-        setAlertProps({
-            message,
-            type,
-            visible: true
-        });
-    };
-
-    // Handler to close the alert
-    const handleCloseAlert = () => {
-        setAlertProps(prev => ({
-            ...prev,
-            visible: false
-        }));
-    };
     const handleGuestAcct = async () => {
         try {
-            setLoading(true)
+            setLoading(true);
             const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/guest-signup`);
             const user = response.data?.newUser;
             if (user) {
                 localStorage.setItem("user", JSON.stringify(user));
-                console.log("Guest account created:", user);
-                setShowGuestSignin(false); // Close alert after successful guest login
-                setLoading(false)
-                navigate('/');
-            } else {
-                console.error("No user returned from guest-signup API");
+                setShowGuestSignin(false);
+                setLoading(false);
+                window.location.reload();
             }
-        } catch (error) {
-            console.error("Error creating guest account:", error);
-        }
+        } catch (error) { console.error(error); setLoading(false); }
     };
-    const addToCart = async (productId, buyNow = false) => {
-        console.log("Adding to cart:", productId);
-        if (!userId) {
-            // showNotification("Please login to add items to cart hello", "error");
-            setShowGuestSignin(true)
-            return;
-        }
 
-        if (buyNow) {
-            setIsBuyingNow(true);
-        } else {
-            setIsAddingToCart(true);
-        }
+    const addToCart = async (productId, buyNow = false) => {
+        if (!userId) { setShowGuestSignin(true); return; }
+        if (buyNow) setIsBuyingNow(true); else setIsAddingToCart(true);
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/product/add-to-cart`, {
-                productId,
-                userId
-            });
-            console.log("Product added to cart:", response.data);
-
+            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/product/add-to-cart`, { productId, userId });
             showNotification(
-                buyNow
-                    ? "Product purchased successfully! Redirecting to profile..."
-                    : "Product added to cart successfully!",
+                buyNow ? "Product purchased successfully! Redirecting..." : "Added to cart successfully!",
                 "success"
             );
-
-            // If buying now, redirect to cart page
-            if (buyNow) {
-                setTimeout(() => {
-                    window.location.href = '/checkout';
-                }, 2000); // Give time for the alert to be visible
-            }
-            else {
-                // If just adding to cart, you can update the cart state or show a success message
-                setTimeout(() => {
-                    window.location.href = '/profile';
-                }, 2000); // Give time for the alert to be visible
-            }
+            setTimeout(() => window.location.href = buyNow ? '/checkout' : '/profile', 1500);
         } catch (error) {
-            console.error("Error:", error.response?.data?.message || error.message);
-            showNotification(
-                "Error: " + (error.response?.data?.message || error.message),
-                "error"
-            );
+            showNotification(error.response?.data?.message || "Error adding to cart", "error");
         } finally {
-            setIsAddingToCart(false);
-            setIsBuyingNow(false);
+            setIsAddingToCart(false); setIsBuyingNow(false);
         }
     };
 
-    // If loading or error, show appropriate message
-    if (loading) return <div className="min-h-screen flex items-center justify-center">Loading product...</div>;
-    if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
-    if (!product) return <div className="min-h-screen flex items-center justify-center">Product not found</div>;
+    const handlePrevImage = () => {
+       setSelectedImageIndex(prev => prev > 0 ? prev - 1 : product.img.length - 1);
+    };
 
-    const renderTechnicalSpecs = () => (
+    const handleNextImage = () => {
+       setSelectedImageIndex(prev => prev < product.img.length - 1 ? prev + 1 : 0);
+    };
 
+    if (loading) return <div className="min-h-screen flex items-center justify-center p-8"><div className="w-12 h-12 border-2 border-t-black border-gray-200 rounded-full animate-spin"></div></div>;
+    if (error) return <div className="min-h-screen flex items-center justify-center text-red-500 font-sans tracking-widest uppercase">{error}</div>;
+    if (!product) return <div className="min-h-screen flex items-center justify-center font-sans tracking-widest uppercase text-gray-500">Product not found</div>;
 
-        <div className="p-6 rounded-xl shadow-lg">
-            <h3 className="text-xl font-bold text-black mb-4 flex items-center">
-                <FaBolt className="mr-2 text-blue-600" /> Technical Specifications
-            </h3>
-            <div className="grid grid-cols-2 gap-4 text-black">
-                {Object.entries(product.technicalSpecs).map(([key, value]) => (
-                    <div key={key} className="bg-white p-3 rounded-lg shadow-md">
-                        <p className="text-sm text-black font-bold capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
-                        <p className="">{value}</p>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
+    const discountPercentage = Math.round(((product.price - product.discountPrice) / product.price) * 100);
 
     return (
-        <div className="min-h-screen  px-4">
-            {/* <DynamicProductSchema product={product} /> */}
-            {/* Alert Message Component */}
+        <div className="bg-[#f7f7f7] min-h-screen pb-20">
+            {/* Alerts & Modals */}
             {alertProps.visible && (
-                <AlertMessage
-                    message={alertProps.message}
-                    type={alertProps.type}
-                    onClose={handleCloseAlert}
-                    duration={5000}
-                    logoUrl={"../images/logo.png"}
-                    showCloseButton={true}
-                />
+                <AlertMessage message={alertProps.message} type={alertProps.type} onClose={handleCloseAlert} duration={4000} showCloseButton />
             )}
-            {showGuestSign && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center">
-                    <div className="bg-gray-400 w-full max-w-md px-6 py-6 text-center rounded-lg shadow-lg relative">
-                        {/* Close Button (X) positioned at the top-right */}
-                        <button
-                            className="absolute top-2 right-2 text-white bg-red-500 hover:bg-red-600 font-semibold text-lg rounded-full w-8 h-8 flex items-center justify-center"
-                            onClick={() => setShowGuestSignin(false)}
-                        >
-                            X
-                        </button>
 
-                        {loading ? (
-                            // Loader: Spinner shown while loading
-                            <div className="flex justify-center items-center">
-                                <div className="w-16 h-16 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin"></div>
-                            </div>
-                        ) : (
-                            <>
-                                <h2 className="text-lg font-semibold text-gray-800 mb-2">Continue Without Account</h2>
-                                <p className="text-gray-600 mb-4 text-sm">You can browse and use the app as a guest.</p>
-                                <button
-                                    onClick={handleGuestAcct}
-                                    className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
-                                >
-                                    Continue as Guest
-                                </button>
-                            </>
-                        )}
+            {showGuestSign && (
+                <div className="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center">
+                    <div className="bg-white px-8 py-8 max-w-[360px] w-[90%] text-center rounded-2xl shadow-xl">
+                        <p className="font-serif text-[1.3rem] font-bold mb-2">Sign in</p>
+                        <p className="font-sans text-sm text-[#6c6c6c] mb-6">Create a guest account to continue checkout.</p>
+                        <div className="flex justify-center gap-3">
+                            <button onClick={() => setShowGuestSignin(false)} className="rounded-lg border border-[#0f0f0f] px-4 py-2 font-sans text-sm font-semibold text-[#0f0f0f] hover:bg-[#0f0f0f] hover:text-white transition">Cancel</button>
+                            <button onClick={handleGuestAcct} className="rounded-lg bg-[#0f0f0f] px-4 py-2 font-sans text-sm font-semibold text-white hover:bg-[#1a1a1a] transition">Continue as Guest</button>
+                        </div>
                     </div>
                 </div>
             )}
 
+            {/* Main Product Layout */}
+            <div className="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-[1.3fr_1fr] gap-[clamp(40px,6vw,100px)] px-[clamp(20px,4vw,60px)] py-10 items-start">
 
+                {/* ── Left Column: Media Gallery ── */}
+                <div className="flex gap-6 h-[calc(100vh-120px)] sticky top-24">
 
-
-
-            <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12">
-                {/* Product Visual Section */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className="relative group"
-                >
-                    <div className="rounded-3xl p-8 relative overflow-hidden">
-                        {/* Main Image */}
-                        <motion.img
-                            src={selectedImage}
-                            alt={product.name}
-                            className="w-full h-96 object-contain transform transition-all duration-300 group-hover:scale-110"
-                        />
-
-                        {/* Expand Button */}
-                        <button
-                            onClick={() => setIsFullScreenImage(true)}
-                            className="absolute top-4 right-4 bg-white/50 hover:bg-white/80 p-2 rounded-full transition"
-                        >
-                            <FaExpand className="text-blue-800" />
+                    {/* Vertical Thumbnails */}
+                    <div className="flex flex-col gap-3 w-20 flex-shrink-0">
+                        <button onClick={handlePrevImage} className="bg-transparent border-none cursor-pointer py-2 text-[#0f0f0f] opacity-60 hover:opacity-100 transition-opacity">
+                            <FaAngleUp size={24} />
                         </button>
 
-                        {/* Thumbnail Images - Made responsive */}
-                        <div className="flex flex-wrap justify-center gap-2 ">
-                            {product.img.map((img, index) => (
-                                <img
-                                    key={index}
-                                    src={img}
-                                    alt={`Thumbnail ${index}`}
-                                    className={`w-16 h-16 sm:w-20 sm:h-20 object-contain cursor-pointer rounded-lg border-2 transition ${selectedImage === img ? "border-blue-500 scale-105" : "border-gray-300"
-                                        }`}
-                                    onClick={() => setSelectedImage(img)}
-                                />
-                            ))}
+                        <div className="flex flex-col gap-2.5 flex-1 overflow-y-auto hide-scrollbar">
+                           {product.img.map((img, idx) => (
+                               <button 
+                                  key={idx}
+                                  onClick={() => setSelectedImageIndex(idx)}
+                                  className={`w-full aspect-square bg-white p-2 rounded-md transition border ${selectedImageIndex === idx ? "border-[#0f0f0f]" : "border-[#e5e5e5] hover:border-gray-400"}`}
+                               >
+                                   <img src={img} alt={`Thumbnail ${idx}`} className="w-full h-full object-contain" />
+                               </button>
+                           ))}
                         </div>
+
+                        <button onClick={handleNextImage} className="bg-transparent border-none cursor-pointer py-2 text-[#0f0f0f] opacity-60 hover:opacity-100 transition-opacity">
+                            <FaAngleDown size={24} />
+                        </button>
                     </div>
 
-                    {/* Color Selection */}
-                    <div className="flex justify-center mt-6 space-x-4">
-                        {product.colors.map((color) => (
-                            <button
-                                key={color._id}
-                                onClick={() => handleColorSelect(color)}
-                                className={`w-8 h-8 sm:w-8 sm:h-8 rounded-full border-4 transition-all duration-300 
-                               ${selectedColor === color.hex ? 'border-blue-500 scale-110' : 'hover:border-blue-300'}
-                               ${color.hex === '#FFFFFF' ? 'border-gray-400 shadow-md' : ''}`}
-                                style={{ backgroundColor: color.hex }}
-                                title={color.name}
+                    {/* Main Stage */}
+                    <div className="flex-1 bg-white rounded-2xl relative overflow-hidden flex items-center justify-center p-10 border border-black/5">
+                        <AnimatePresence mode="wait">
+                            <motion.img
+                                key={selectedImageIndex}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                transition={{ duration: 0.3 }}
+                                src={product.img[selectedImageIndex]}
+                                alt={product.name}
+                                className="w-full h-full object-contain max-h-[75vh]"
                             />
+                        </AnimatePresence>
 
-                        ))}
+                        <button
+                            onClick={() => setIsFullScreenImage(true)}
+                            className="absolute top-4 right-4 bg-white border border-[#e5e5e5] p-3 rounded-full text-[#0f0f0f] shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:bg-gray-50 transition"
+                        >
+                            <FaExpand />
+                        </button>
                     </div>
-                </motion.div>
+                </div>
 
-                {/* Product Details Section */}
-                <div className="space-y-6">
-                    <motion.div
-                        initial={{ x: 50, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: 0.2, duration: 0.5 }}
-                    ><h1 className="text-2xl sm:text-4xl font-black text-black mb-2">{product.name}</h1>
 
-                        <p className="text-xl text-black font-medium">{product.tagline}</p>
-                    </motion.div>
+                {/* ── Right Column: Sticky Product Info ── */}
+                <div className="pt-5">
+                    <div className="bg-white rounded-2xl px-[clamp(24px,4vw,40px)] py-[clamp(24px,4vw,40px)] shadow-[0_10px_40px_rgba(0,0,0,0.04)] relative">
 
-                    {/* Price Section */}
-                    <div className="w-full p-6 rounded-xl border border-gray-200 shadow-sm bg-white space-y-6">
-
-                        {/* Price and Discount */}
-                        <div className="space-y-2">
-                            <div className="flex items-center space-x-3">
-                                <span className="text-3xl sm:text-4xl font-extrabold text-black">
-                                    PKR: {product.discountPrice}
-                                </span>
-                                <span className="text-xl text-gray-400 line-through">
-                                    PKR: {product.price}
-                                </span>
+                        {/* SALE Badge */}
+                        {product.price > product.discountPrice && (
+                            <div className="absolute -top-3 right-8 bg-[#e53945] text-white px-3.5 py-1.5 rounded-full font-sans text-sm font-bold tracking-[0.05em]">
+                                SALE
                             </div>
-                            <span className="inline-block bg-green-100 text-green-800 px-3 py-1 text-sm rounded-full font-medium">
-                                Save PKR {(product.price - product.discountPrice).toFixed(2)}
+                        )}
+
+                        {/* Reviews summary */}
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="flex gap-0.5 text-black text-base">
+                                {Array(5).fill(0).map((_, i) => <span key={i}>★</span>)}
+                            </div>
+                            <span className="font-sans text-xs text-[#7a7a7a] underline cursor-pointer">
+                                30 Reviews
                             </span>
                         </div>
 
-                        {/* Quantity Selector */}
-                        <div className="flex items-center space-x-4">
-                            <span className="text-black font-medium">Quantity:</span>
-                            <div className="flex items-center bg-blue-50 rounded-full overflow-hidden border border-blue-200">
-                                <button
-                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="px-4 py-2 text-blue-800 hover:bg-blue-200 transition font-bold"
-                                    disabled={product.stock <= 0}
-                                >
-                                    -
-                                </button>
-                                <span className="px-4 py-2 font-semibold">{quantity}</span>
-                                <button
-                                    onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                                    className="px-4 py-2 text-blue-800 hover:bg-blue-200 transition font-bold"
-                                    disabled={quantity >= product.stock || product.stock <= 0}
-                                >
-                                    +
-                                </button>
+                        {/* Title & Tagline */}
+                        <h1 className="font-serif text-[clamp(2rem,3vw,2.5rem)] font-extrabold text-[#0f0f0f] mb-2 leading-tight">
+                            {product.name}
+                        </h1>
+                        <p className="font-sans text-base text-[#7a7a7a] mb-6">
+                            {product.tagline}
+                        </p>
+
+                        {/* Price */}
+                        <div className="flex items-baseline gap-4 mb-8">
+                            <span className="font-sans text-3xl font-extrabold text-[#0f0f0f]">
+                                Rs.{product.discountPrice?.toLocaleString()}
+                            </span>
+                            {product.price > product.discountPrice && (
+                                <span className="font-sans text-xl font-semibold text-[#bdbdbd] line-through">
+                                    Rs.{product.price?.toLocaleString()}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Color Selector */}
+                        {product.colors?.length > 0 && (
+                            <div className="mb-8">
+                                <p className="font-sans text-sm font-semibold mb-3 text-[#0f0f0f]">
+                                    Color: <span className="font-normal text-[#7a7a7a]">{product.colors.find(c => c.hex === selectedColor)?.name}</span>
+                                </p>
+                                <div className="flex gap-3">
+                                    {product.colors.map(color => (
+                                        <button
+                                            key={color._id}
+                                            onClick={() => setSelectedColor(color.hex)}
+                                            className={`w-9 h-9 rounded-full border-2 border-white transition outline ${selectedColor === color.hex ? "outline-2 outline-[#0f0f0f]" : "outline-1 outline-[#e5e5e5] hover:outline-gray-400"}`}
+                                            style={{ background: color.hex }}
+                                            title={color.name}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Fake Stock Indicator (Matches Waldor styling) */}
+                        <div className="mb-8">
+                            <p className="font-sans text-sm font-bold italic text-[#e53945] mb-2">
+                                {product.stock > 0 ? `${Math.min(product.stock, 18)} in stock` : "Out of stock"}
+                            </p>
+                            <div className="h-1 bg-[#e0e0e0] w-full rounded overflow-hidden">
+                                <div className={`h-full bg-[#4CAF50] ${product.stock > 0 ? "w-[70%]" : "w-0"}`} />
                             </div>
                         </div>
 
-                        {/* Buttons */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                        {/* Action Buttons */}
+                        <div className="flex flex-col gap-4 mb-8">
                             <button
                                 onClick={() => addToCart(product._id, false)}
-                                className="flex items-center justify-center bg-white border-2 border-black text-black py-3 rounded-xl hover:bg-blue-600 hover:text-white transition font-semibold"
                                 disabled={isAddingToCart || isBuyingNow || product.stock <= 0}
+                                className="w-full py-4 rounded-lg bg-[#0f0f0f] text-white font-sans text-base font-bold transition hover:bg-[#1a1a1a] disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                                {isAddingToCart ? (
-                                    "Adding..."
-                                ) : (
-                                    <>
-                                        <FaShoppingCart className="mr-2" />
-                                        Add to Cart
-                                    </>
-                                )}
+                                {isAddingToCart ? "Adding..." : "Add To Cart"}
                             </button>
-
+                            
                             <button
                                 onClick={() => addToCart(product._id, true)}
-                                className="bg-black text-white py-3 rounded-xl hover:bg-blue-800 transition font-semibold"
                                 disabled={isAddingToCart || isBuyingNow || product.stock <= 0}
+                                className="w-full py-4 rounded-lg bg-gradient-to-b from-[#f5f5f5] to-[#e0e0e0] text-[#0f0f0f] font-sans text-base font-bold border border-[#d4d4d4] transition hover:from-[#ebebeb] hover:to-[#d5d5d5] disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                                {isBuyingNow ? "Processing..." : "Buy Now"}
+                                {isBuyingNow ? "Processing..." : "Buy It Now"}
                             </button>
                         </div>
-                    </div>
-
-
-                    {/* Features */}
-                    <div className="space-y-2">
-                        {product.features.map((feature, index) => (
-                            <div key={index} className="flex items-center text-black">
-                                <FaCheckCircle className="mr-2 text-black" />
-                                <span>{feature}</span>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Stock Information */}
-                    <div className="bg-blue-50 p-3 rounded-lg">
-                        <p className="text-blue-800">
-                            <FaCheckCircle className="inline mr-2" />
-                            {product.stock > 0 ? `In Stock (${product.stock} available)` : "Out of Stock"}
+                        
+                        {/* Features / Pitch */}
+                        <p className="font-sans text-sm text-[#0f0f0f] leading-6 mb-6">
+                            The simplicity paradox — do less, deliver more. {product.tagline} Perfects the user flow and integrates seamlessly into your daily carry.
                         </p>
+                        
+                        <a href="#product-details" className="font-sans text-sm text-[#0f0f0f] underline font-semibold">
+                            Show More
+                        </a>
                     </div>
-
-
                 </div>
             </div>
 
-            {/* Technical Specs Section */}
-            <div className="max-w-6xl mx-auto mt-16">
-                {renderTechnicalSpecs()}
+            <div id="product-details" className="py-10" />
+
+            {/* Bottom Content Area */}
+            <div className="max-w-[1080px] mx-auto px-[clamp(20px,4vw,40px)]">
+                
+                {/* Product Overview & Specs Accordion style */}
+                <div className="bg-white rounded-2xl p-10 mb-14 border border-[#e5e5e5]">
+                     <h2 className="font-serif text-[1.8rem] font-bold mb-6 text-[#0f0f0f]">Features & Specs</h2>
+                     <p className="font-sans text-base leading-7 text-[#7a7a7a] mb-8">
+                         {product.description}
+                     </p>
+                     
+                     {product.technicalSpecs && Object.keys(product.technicalSpecs).length > 0 && (
+                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 border-t border-[#e5e5e5] pt-8">
+                             {Object.entries(product.technicalSpecs).map(([key, value]) => (
+                                 <div key={key}>
+                                     <p className="font-sans text-xs font-bold text-[#0f0f0f] capitalize mb-1">
+                                         {key.replace(/([A-Z])/g, ' $1')}
+                                     </p>
+                                     <p className="font-sans text-sm text-[#7a7a7a]">
+                                         {value}
+                                     </p>
+                                 </div>
+                             ))}
+                         </div>
+                     )}
+                </div>
+
+                {/* Reviews Section */}
+                <Reviews selectedProduct={product.name}/>
             </div>
 
-            {/* Product Description */}
-            <div className="max-w-6xl mx-auto mt-16 bg-white p-8 rounded-2xl shadow-lg">
-                <h2 className="text-3xl font-bold text-black mb-6">Product Overview</h2>
-                <p className="text-black text-lg leading-relaxed">{product.description}</p>
-            </div>
-
-            {/* Full Screen Image Modal - Fixed to show selected image */}
+            {/* Full Screen Image Modal */}
             {isFullScreenImage && (
-                <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 bg-white/95 z-[1000] flex items-center justify-center p-10">
                     <button
-                        className="absolute top-4 right-4 text-white text-2xl"
+                        className="absolute top-6 right-6 bg-transparent border-none text-3xl cursor-pointer text-[#0f0f0f]"
                         onClick={() => setIsFullScreenImage(false)}
                     >
                         ×
                     </button>
                     <img
-                        src={selectedImage}
+                        src={product.img[selectedImageIndex]}
                         alt={product.name}
                         className="max-w-full max-h-full object-contain"
                     />
                 </div>
             )}
-
-            {/* ratings and reviews */}
-            <Reviews selectedProduct={product.name}/>
         </div>
     );
 };
 
-export default EarbudsProductDisplay;
+export default ProductDisplay;

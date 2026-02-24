@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import AlertMessage from "./Alert";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ProductCard = ({ product, loading }) => {
   const navigate = useNavigate();
@@ -61,190 +62,140 @@ const ProductCard = ({ product, loading }) => {
         <AlertMessage message={alert.message} type={alert.type} onClose={hideAlert} duration={4000} showCloseButton />
       )}
       {showGuestSignin && (
-        <div style={{
-          position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
-          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200
-        }}>
-          <div style={{ background: "#fff", padding: "32px", maxWidth: 360, width: "90%", textAlign: "center" }}>
-            <p style={{ fontFamily: "var(--font-serif)", fontSize: "1.3rem", marginBottom: 8 }}>Sign in to continue</p>
-            <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "var(--prada-gray)", marginBottom: 24, letterSpacing: "0.05em" }}>
-              Create a guest account to add items to your cart.
-            </p>
-            <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-              <button onClick={() => setShowGuestSignin(false)} className="btn-prada-outline">Cancel</button>
-              <button onClick={handleGuestAcct} className="btn-prada-solid">Continue as Guest</button>
+        <div className="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center">
+          <div className="bg-white px-8 py-8 max-w-[360px] w-[90%] text-center rounded-2xl shadow-lg">
+            <p className="font-sans text-[1.3rem] font-bold mb-2">Sign in</p>
+            <p className="font-sans text-sm text-[#6c6c6c] mb-6">Create a guest account to add items to your cart.</p>
+            <div className="flex justify-center gap-3">
+              <button
+                onClick={() => setShowGuestSignin(false)}
+                className="rounded-lg border border-[#0f0f0f] px-4 py-2 font-sans text-sm font-semibold text-[#0f0f0f] hover:bg-[#0f0f0f] hover:text-white transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleGuestAcct}
+                className="rounded-lg bg-[#0f0f0f] px-4 py-2 font-sans text-sm font-semibold text-white hover:bg-[#1a1a1a] transition"
+              >
+                Continue as Guest
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Card ── */}
+      {/* ── Main Rounded Card Container ── */}
       <div
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        style={{ cursor: "pointer", background: "var(--prada-white)" }}
+        className={`relative flex flex-col bg-[#f7f7f7] rounded-[18px] px-[18px] pb-6 pt-[18px] border border-[#e2e2e2] transition-all duration-300 ease-out ${
+          hovered
+            ? "shadow-[0_16px_40px_rgba(0,0,0,0.12)] -translate-y-1"
+            : "shadow-[0_10px_22px_rgba(0,0,0,0.05)] translate-y-0"
+        }`}
       >
-        {/* Image container */}
-        <Link to={`/product/${product._id}`} style={{ display: "block", textDecoration: "none" }}>
-          <div
-            style={{
-              position: "relative",
-              width: "100%",
-              aspectRatio: "3/4",
-              overflow: "hidden",
-              background: "var(--prada-off-white)",
-            }}
+        {/* Discount badge - Red, rounded, bold top right of the whole card */}
+        {product.price > product.discountPrice && (
+          <span
+            className="absolute top-[14px] right-[14px] z-10 font-sans text-[0.74rem] font-extrabold tracking-[0.03em] bg-[#e53945] text-white px-3 py-1 rounded-full shadow-[0_6px_16px_rgba(229,57,69,0.25)]"
           >
+            SAVE {Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
+          </span>
+        )}
+
+        {/* Out of stock overlay */}
+        {product.stock <= 0 && (
+          <div className="absolute top-4 left-4 z-10 bg-black/70 text-white px-2.5 py-1 rounded-md font-sans text-[0.75rem] font-bold tracking-[0.05em] uppercase">
+            Sold Out
+          </div>
+        )}
+
+        {/* Image container */}
+        <Link to={`/product/${product._id}`} className="block no-underline flex-grow">
+          <div className="relative w-full aspect-square overflow-hidden flex items-center justify-center bg-white rounded-[14px] border border-[#ededed]">
             <img
               src={product.img?.[0]}
               alt={product.name}
               loading="lazy"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                transition: "transform 0.65s cubic-bezier(0.25,0.46,0.45,0.94)",
-                transform: hovered ? "scale(1.05)" : "scale(1)",
-              }}
+              className={`w-[92%] h-[92%] object-contain transition-transform duration-300 ease-out ${hovered ? "scale-[1.06]" : "scale-100"}`}
             />
-
-            {/* Discount badge */}
-            {product.price > product.discountPrice && (
-              <span style={{
-                position: "absolute", top: 12, left: 12,
-                fontFamily: "var(--font-sans)", fontSize: "0.58rem",
-                letterSpacing: "0.14em", fontWeight: 500,
-                background: "var(--prada-black)", color: "#fff",
-                padding: "3px 8px",
-              }}>
-                -{Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
-              </span>
-            )}
-
-            {/* Low stock */}
-            {product.stock <= 5 && product.stock > 0 && (
-              <span style={{
-                position: "absolute", bottom: 12, left: 12,
-                fontFamily: "var(--font-sans)", fontSize: "0.55rem",
-                letterSpacing: "0.15em", textTransform: "uppercase",
-                color: "var(--prada-gray)",
-              }}>
-                Only {product.stock} left
-              </span>
-            )}
-
-            {/* Out of stock overlay */}
-            {product.stock === 0 && (
-              <div style={{
-                position: "absolute", inset: 0,
-                background: "rgba(255,255,255,0.6)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.62rem", letterSpacing: "0.22em", textTransform: "uppercase" }}>
-                  Out of Stock
-                </span>
-              </div>
-            )}
-
-            {/* Hover Add to Cart */}
-            {product.stock > 0 && (
-              <div style={{
-                position: "absolute", bottom: 0, left: 0, right: 0,
-                padding: "14px 16px",
-                background: "rgba(255,255,255,0.85)",
-                transform: hovered ? "translateY(0)" : "translateY(100%)",
-                transition: "transform 0.35s ease",
-              }}>
-                <button
-                  onClick={(e) => { e.preventDefault(); addToCart(product._id); }}
-                  disabled={isAddingToCart}
-                  style={{
-                    display: "block",
-                    width: "100%",
-                    fontFamily: "var(--font-sans)",
-                    fontSize: "0.6rem",
-                    fontWeight: 500,
-                    letterSpacing: "0.22em",
-                    textTransform: "uppercase",
-                    color: "var(--prada-black)",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                    textUnderlineOffset: "4px",
-                    opacity: isAddingToCart ? 0.5 : 1,
-                  }}
-                >
-                  {isAddingToCart ? "Adding…" : "Add to Cart"}
-                </button>
-              </div>
-            )}
           </div>
         </Link>
 
         {/* Info below image */}
-        <div style={{ padding: "12px 0 20px" }}>
-          {product.category && (
-            <p className="text-luxury-label" style={{ marginBottom: 5 }}>{product.category}</p>
-          )}
-          <Link to={`/product/${product._id}`} style={{ textDecoration: "none", color: "inherit" }}>
-            <h3 style={{
-              fontFamily: "var(--font-sans)",
-              fontSize: "0.82rem",
-              fontWeight: 400,
-              letterSpacing: "0.04em",
-              color: "var(--prada-black)",
-              margin: "0 0 6px",
-              lineHeight: 1.4,
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-            }}>
+        <div className="pt-4 flex flex-col gap-[10px]">
+          
+          {/* Title */}
+          <Link to={`/product/${product._id}`} className="no-underline text-inherit">
+            <h3 className="font-heading text-[1.08rem] font-extrabold text-[#0f0f0f] leading-[1.16] m-0 overflow-hidden text-ellipsis whitespace-nowrap">
               {product.name}
             </h3>
           </Link>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{
-              fontFamily: "var(--font-sans)",
-              fontSize: "0.78rem",
-              fontWeight: 400,
-              letterSpacing: "0.04em",
-              color: "var(--prada-black)",
-            }}>
-              PKR {product.discountPrice?.toLocaleString()}
-            </span>
-            {product.price > product.discountPrice && (
-              <span style={{
-                fontFamily: "var(--font-sans)",
-                fontSize: "0.72rem",
-                color: "var(--prada-mid-gray)",
-                textDecoration: "line-through",
-                letterSpacing: "0.02em",
-              }}>
-                PKR {product.price?.toLocaleString()}
-              </span>
+          
+          {/* Color Swatches */}
+          <div className="flex gap-[6px]">
+            {product.colors && product.colors.length > 0 ? (
+              product.colors.slice(0, 6).map((color, idx) => (
+                <span
+                  key={`${color.hex}-${idx}`}
+                  className="w-[15px] h-[15px] rounded-full border-2 border-white outline outline-1 outline-[#d0d0d0] shadow-[0_2px_5px_rgba(0,0,0,0.06)]"
+                  style={{ background: color.hex }}
+                />
+              ))
+            ) : (
+              <>
+                <span className="w-[15px] h-[15px] rounded-full border-2 border-white outline outline-1 outline-[#cfcfcf] shadow-[0_2px_5px_rgba(0,0,0,0.06)]" style={{ background: "#a5673f" }} />
+                <span className="w-[15px] h-[15px] rounded-full border-2 border-white outline outline-1 outline-[#cfcfcf] shadow-[0_2px_5px_rgba(0,0,0,0.06)]" style={{ background: "#2f4a5f" }} />
+                <span className="w-[15px] h-[15px] rounded-full border-2 border-white outline outline-1 outline-[#cfcfcf] shadow-[0_2px_5px_rgba(0,0,0,0.06)]" style={{ background: "#0f0f0f" }} />
+                <span className="w-[15px] h-[15px] rounded-full border-2 border-white outline outline-1 outline-[#cfcfcf] shadow-[0_2px_5px_rgba(0,0,0,0.06)]" style={{ background: "#0d5c45" }} />
+              </>
             )}
           </div>
+
+          {/* Pricing */}
+          <div className="flex items-baseline gap-2 mt-[2px]">
+            {product.price > product.discountPrice && (
+              <span className="font-sans text-[0.92rem] font-bold text-[#9c9c9c] line-through">
+                Rs.{product.price?.toLocaleString()}
+              </span>
+            )}
+            <span className="font-sans text-[1.08rem] font-black text-[#0f0f0f]">
+              Rs.{product.discountPrice?.toLocaleString()}
+            </span>
+          </div>
         </div>
+        
+        {/* Hover Quick Add to Cart Button */}
+        <AnimatePresence>
+            {hovered && product.stock > 0 && (
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute bottom-4 left-4 right-4"
+                >
+                    <button
+                        onClick={(e) => { e.preventDefault(); addToCart(product._id); }}
+                        disabled={isAddingToCart}
+                        className="w-full py-3 rounded-lg bg-[#0f0f0f] text-white font-sans text-[0.9rem] font-bold shadow-[0_6px_16px_rgba(0,0,0,0.15)] cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                        {isAddingToCart ? "Adding..." : "Add to Cart"}
+                    </button>
+                </motion.div>
+            )}
+        </AnimatePresence>
+
       </div>
     </>
   );
 };
 
 const SkeletonCard = () => (
-  <div style={{ background: "var(--prada-white)" }}>
-    <div style={{
-      width: "100%", aspectRatio: "3/4",
-      background: "var(--prada-light-gray)",
-      animation: "pulse 1.8s ease-in-out infinite",
-    }} />
-    <div style={{ padding: "12px 0 20px" }}>
-      <div style={{ height: 8, width: "40%", background: "var(--prada-light-gray)", marginBottom: 10, animation: "pulse 1.8s ease-in-out infinite" }} />
-      <div style={{ height: 10, width: "85%", background: "var(--prada-light-gray)", marginBottom: 6, animation: "pulse 1.8s ease-in-out infinite" }} />
-      <div style={{ height: 10, width: "55%", background: "var(--prada-light-gray)", animation: "pulse 1.8s ease-in-out infinite" }} />
-    </div>
-    <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }`}</style>
+  <div className="bg-[#f7f7f7] rounded-2xl p-4 h-[360px] flex flex-col animate-pulse">
+    <div className="w-full flex-1 bg-[#e5e5e5] rounded-lg mb-4" />
+    <div className="h-5 w-[70%] bg-[#e5e5e5] mb-3 rounded" />
+    <div className="h-4 w-[30%] bg-[#e5e5e5] rounded" />
   </div>
 );
 

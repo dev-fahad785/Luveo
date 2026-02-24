@@ -2,10 +2,10 @@ import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 const categories = [
-  { id: 1, category: "women bags",      image: "https://images.pexels.com/photos/23223837/pexels-photo-23223837.jpeg?_gl=1*su7qjh*_ga*MTEyMzM2ODEyNy4xNzcxNjY5OTAy*_ga_8JE65Q40S6*czE3NzE2Njk5MDIkbzEkZzEkdDE3NzE2NzA5NDQkajQzJGwwJGgw"        },
-  { id: 2, category: "Men Wallet", image: "https://images.unsplash.com/photo-1606503825008-909a67e63c3d?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"    },
-  { id: 3, category: "Lather Belts",   image: "https://images.unsplash.com/photo-1664286074176-5206ee5dc878?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"     },
-  { id: 4, category: "Perfume",  image: "https://images.unsplash.com/photo-1535683577427-740aaac4ec25?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"   },
+  { id: 1, category: "Women's Bags",      image: "https://images.pexels.com/photos/23223837/pexels-photo-23223837.jpeg?_gl=1*su7qjh*_ga*MTEyMzM2ODEyNy4xNzcxNjY5OTAy*_ga_8JE65Q40S6*czE3NzE2Njk5MDIkbzEkZzEkdDE3NzE2NzA5NDQkajQzJGwwJGgw"        },
+  { id: 2, category: "Men's Wallets", image: "https://images.unsplash.com/photo-1606503825008-909a67e63c3d?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"    },
+  { id: 3, category: "Leather Belts",   image: "https://images.unsplash.com/photo-1664286074176-5206ee5dc878?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"     },
+  { id: 4, category: "Accessories",  image: "https://images.unsplash.com/photo-1535683577427-740aaac4ec25?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"   },
 ];
 
 const Explore = () => {
@@ -15,7 +15,10 @@ const Explore = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => entries.forEach(e => {
-        if (e.isIntersecting) e.target.classList.add("prada-reveal-in");
+        if (e.isIntersecting) {
+          e.target.classList.add("opacity-100", "translate-y-0");
+          observer.unobserve(e.target);
+        }
       }),
       { threshold: 0.15 }
     );
@@ -24,44 +27,19 @@ const Explore = () => {
   }, []);
 
   return (
-    <section style={{ padding: "0 clamp(20px, 5vw, 80px) 80px", background: "var(--prada-white)" }}>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-          gap: "clamp(12px, 2vw, 28px)",
-          maxWidth: 1200,
-          margin: "0 auto",
-        }}
-      >
+    <section className="bg-[#f7f7f7] pb-20 px-[clamp(20px,5vw,80px)]">
+      <div className="max-w-[1440px] mx-auto grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-[clamp(16px,3vw,32px)]">
         {categories.map((item, idx) => (
           <CategoryPanel
             key={item.id}
             item={item}
             idx={idx}
             ref={el => (itemsRef.current[idx] = el)}
-            onClick={() => navigate(`/products/${item.category.toLowerCase()}`)}
+            onClick={() => navigate(`/products/${item.category.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}`)}
           />
         ))}
       </div>
 
-      <style>{`
-        .prada-category-panel {
-          opacity: 0;
-          transform: translateY(28px);
-          transition: opacity 0 ease, transform 0 ease;
-        }
-        .prada-reveal-in {
-          animation: pradaReveal 0.7s ease forwards;
-        }
-        @keyframes pradaReveal {
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .prada-category-panel:nth-child(1) { animation-delay: 0s; }
-        .prada-category-panel:nth-child(2) { animation-delay: 0.1s; }
-        .prada-category-panel:nth-child(3) { animation-delay: 0.2s; }
-        .prada-category-panel:nth-child(4) { animation-delay: 0.3s; }
-      `}</style>
     </section>
   );
 };
@@ -73,59 +51,27 @@ const CategoryPanel = React.forwardRef(({ item, onClick }, ref) => {
     <div
       ref={ref}
       onClick={onClick}
-      className="prada-category-panel"
+      className={`opacity-0 translate-y-7 transition-all duration-700 ease-out cursor-pointer flex flex-col gap-4`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ cursor: "pointer" }}
     >
-      {/* Tall portrait image */}
+      {/* Container with background image and overlay text */}
       <div
-        style={{
-          position: "relative",
-          width: "100%",
-          aspectRatio: "2/3",
-          overflow: "hidden",
-          background: "var(--prada-off-white)",
-        }}
+        className={`relative w-full aspect-[4/5] overflow-hidden bg-[#ededed] rounded-xl shadow-[0_4px_6px_rgba(0,0,0,0.05)] transition duration-400 ${hovered ? "shadow-[0_10px_30px_rgba(0,0,0,0.1)]" : ""}`}
       >
-        <img
-          src={item.image}
-          alt={item.category}
-          loading="lazy"
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            transition: "transform 0.65s cubic-bezier(0.25,0.46,0.45,0.94)",
-            transform: hovered ? "scale(1.05)" : "scale(1)",
-          }}
+        <div
+          className={`absolute inset-0 bg-cover bg-center transition-transform duration-500 ${hovered ? "scale-[1.04]" : "scale-100"}`}
+          style={{ backgroundImage: `url(${item.image})` }}
         />
-      </div>
-
-      {/* Label below image */}
-      <div style={{ paddingTop: 14, textAlign: "center" }}>
-        <p
-          style={{
-            fontFamily: "var(--font-sans)",
-            fontSize: "0.62rem",
-            fontWeight: 400,
-            letterSpacing: "0.24em",
-            textTransform: "uppercase",
-            color: "var(--prada-black)",
-            margin: "0 0 4px",
-          }}
-        >
-          {item.category}
-        </p>
-        <span
-          style={{
-            display: "inline-block",
-            height: 1,
-            width: hovered ? "60%" : "0%",
-            background: "var(--prada-black)",
-            transition: "width 0.35s ease",
-          }}
-        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/15 to-black/40" />
+        <div className="absolute inset-x-0 bottom-0 flex flex-col items-center pb-6 px-4 text-center">
+          <p className="font-sans text-white text-base font-bold tracking-[0.05em] mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]">
+            {item.category}
+          </p>
+          <span
+            className={`h-[2px] rounded-full transition-all duration-300 ${hovered ? "w-10 bg-[#e53945]" : "w-5 bg-white/70"}`}
+          />
+        </div>
       </div>
     </div>
   );

@@ -2,21 +2,21 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 const SearchIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
     <circle cx="11" cy="11" r="7" />
     <path d="M21 21l-4.35-4.35" strokeLinecap="round" />
   </svg>
 );
 
 const AccountIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
     <circle cx="12" cy="8" r="4" />
     <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" strokeLinecap="round" />
   </svg>
 );
 
 const CartIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
     <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" strokeLinejoin="round" />
     <line x1="3" y1="6" x2="21" y2="6" />
     <path d="M16 10a4 4 0 01-8 0" />
@@ -28,7 +28,7 @@ const navItems = [
   { label: "Men",          path: "/products/men" },
   { label: "Women",        path: "/products/women" },
   { label: "Gifting",      path: "/products/gifting" },
-  { label: "All Products", path: "/all-products" },
+  { label: "Explore All",  path: "/all-products" },
 ];
 
 const Navbar = () => {
@@ -49,16 +49,15 @@ const Navbar = () => {
         style={{
           background: "var(--prada-black)",
           color: "var(--prada-white)",
-          fontSize: "0.6rem",
-          letterSpacing: "0.22em",
-          textTransform: "uppercase",
+          fontSize: "0.75rem",
+          letterSpacing: "0.05em",
           textAlign: "center",
-          padding: "9px 16px",
+          padding: "10px 16px",
           fontFamily: "var(--font-sans)",
-          fontWeight: 400,
+          fontWeight: 600,
         }}
       >
-        Complimentary shipping on all orders · Free gift wrapping available
+        Complimentary shipping on all orders · <span style={{ color: "var(--brand-accent)" }}>Shop the Sale</span>
       </div>
 
       {/* ── Main Header ── */}
@@ -67,48 +66,28 @@ const Navbar = () => {
           position: "sticky",
           top: 0,
           zIndex: 100,
-          background: scrolled ? "rgba(255,255,255,0.96)" : "var(--prada-white)",
-          backdropFilter: scrolled ? "blur(12px)" : "none",
+          background: scrolled ? "rgba(253,253,253,0.98)" : "var(--prada-white)",
+          backdropFilter: scrolled ? "blur(8px)" : "none",
           borderBottom: "1px solid var(--prada-border)",
           transition: "all 0.3s ease",
         }}
       >
-        {/* ── Single Row: Logo Left · Nav Centre · Icons Right ── */}
         <div
           style={{
-            display: "flex",
+            display: "grid",
+            gridTemplateColumns: "1fr auto 1fr",
             alignItems: "center",
-            justifyContent: "space-between",
-            padding: "12px 32px",
-            gap: 24,
+            padding: "16px 40px",
+            maxWidth: "1440px",
+            margin: "0 auto",
           }}
         >
-          {/* Left — Logo */}
-          <Link
-            to="/"
-            style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: "clamp(1.25rem, 2.5vw, 1.65rem)",
-              fontWeight: 300,
-              letterSpacing: "0.4em",
-              textTransform: "uppercase",
-              color: "var(--prada-black)",
-              textDecoration: "none",
-              userSelect: "none",
-              flexShrink: 0,
-            }}
-          >
-            LuvEo
-          </Link>
-
-          {/* Centre — Nav links */}
+          {/* Left — Nav links */}
           <nav
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "clamp(16px, 3vw, 40px)",
-              flex: 1,
-              justifyContent: "center",
+              gap: "32px",
             }}
           >
             {navItems.map(item => (
@@ -116,13 +95,31 @@ const Navbar = () => {
             ))}
           </nav>
 
+          {/* Centre — Logo */}
+          <Link
+            to="/"
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: "clamp(1.5rem, 2.5vw, 2rem)",
+              fontWeight: 700,
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              color: "var(--prada-black)",
+              textDecoration: "none",
+              userSelect: "none",
+              textAlign: "center",
+            }}
+          >
+            LuvEo
+          </Link>
+
           {/* Right — Action icons */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 18,
-              flexShrink: 0,
+              justifyContent: "flex-end",
+              gap: 24,
             }}
           >
             <button
@@ -146,7 +143,7 @@ const Navbar = () => {
               to="/profile"
               aria-label="Account"
               style={{ color: "var(--prada-black)", display: "flex", transition: "opacity 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.opacity = "0.5"}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.6"}
               onMouseLeave={e => e.currentTarget.style.opacity = "1"}
             >
               <AccountIcon />
@@ -156,7 +153,7 @@ const Navbar = () => {
               to="/profile"
               aria-label="Cart"
               style={{ color: "var(--prada-black)", display: "flex", transition: "opacity 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.opacity = "0.5"}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.6"}
               onMouseLeave={e => e.currentTarget.style.opacity = "1"}
             >
               <CartIcon />
@@ -169,25 +166,25 @@ const Navbar = () => {
           <div
             style={{
               borderTop: "1px solid var(--prada-border)",
-              padding: "14px 40px",
+              padding: "20px 40px",
               background: "var(--prada-white)",
             }}
           >
-            <div style={{ maxWidth: 480, margin: "0 auto", position: "relative" }}>
+            <div style={{ maxWidth: 600, margin: "0 auto", position: "relative" }}>
               <input
                 autoFocus
                 type="text"
-                placeholder="Search for products…"
+                placeholder="Search collections..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 style={{
                   width: "100%",
                   border: "none",
-                  borderBottom: "1px solid var(--prada-black)",
+                  borderBottom: "2px solid var(--prada-black)",
                   outline: "none",
-                  fontSize: "0.8rem",
-                  letterSpacing: "0.08em",
-                  padding: "6px 0",
+                  fontSize: "1rem",
+                  letterSpacing: "0.05em",
+                  padding: "10px 0",
                   fontFamily: "var(--font-sans)",
                   background: "transparent",
                   color: "var(--prada-black)",
@@ -203,7 +200,7 @@ const Navbar = () => {
                   background: "none",
                   border: "none",
                   cursor: "pointer",
-                  fontSize: "1.1rem",
+                  fontSize: "1.5rem",
                   color: "var(--prada-gray)",
                 }}
               >
@@ -228,15 +225,15 @@ const NavLink = ({ to, label }) => {
       onMouseLeave={() => setHovered(false)}
       style={{
         fontFamily: "var(--font-sans)",
-        fontSize: "0.62rem",
-        fontWeight: 400,
-        letterSpacing: "0.22em",
+        fontSize: "0.85rem",
+        fontWeight: 600,
+        letterSpacing: "0.05em",
         textTransform: "uppercase",
         color: "var(--prada-black)",
         textDecoration: "none",
-        paddingBottom: "3px",
-        borderBottom: hovered ? "1px solid var(--prada-black)" : "1px solid transparent",
-        transition: "border-color 0.25s ease",
+        paddingBottom: "4px",
+        borderBottom: hovered ? "2px solid var(--prada-black)" : "2px solid transparent",
+        transition: "border-color 0.2s ease, color 0.2s ease",
         whiteSpace: "nowrap",
       }}
     >
