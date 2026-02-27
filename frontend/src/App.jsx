@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import axios from 'axios'
 import Home from './Home'
@@ -35,7 +35,7 @@ const PublicLayout = ({ children }) => (
 const App = () => {
   const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
   const role = user?.role || null;
-  const isUserLoggedIn = !!user && !!role;
+  // const isUserLoggedIn = !!user && !!role;
   const [visitor, setVisitor] = useState(0)
   
   useEffect(() => {
