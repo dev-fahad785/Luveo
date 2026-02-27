@@ -17,7 +17,7 @@ const ProductSchema = new mongoose.Schema({
     category: {
         type: String,
         required: true,
-        enum: ['women-bags', 'mens-wallets','leather-belts',  'accessories'],
+        enum: ['women-bags', 'men-wallets','leather-belts',  'accessories'],
         trim: true
     },
     price: {
