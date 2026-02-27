@@ -751,10 +751,10 @@ const ProductManagement = () => {
         category: '',
         description: '',
         technicalSpecs: {
-            batteryLife: '',
-            connectivity: '',
-            noiseReduction: '',
-            waterResistance: ''
+            material: '',
+            dimensions: '',
+            weight: '',
+            careInstructions: ''
         },
         colors: [{ name: '', hex: '#000000' }],
         features: [''],
@@ -801,10 +801,10 @@ const ProductManagement = () => {
             category: '',
             description: '',
             technicalSpecs: {
-                batteryLife: '',
-                connectivity: '',
-                noiseReduction: '',
-                waterResistance: ''
+                material: '',
+                dimensions: '',
+                weight: '',
+                careInstructions: ''
             },
             colors: [{ name: '', hex: '#000000' }],
             features: [''],
@@ -831,10 +831,10 @@ const ProductManagement = () => {
             category: product.category || '',
             description: product.description || '',
             technicalSpecs: product.technicalSpecs || {
-                batteryLife: '',
-                connectivity: '',
-                noiseReduction: '',
-                waterResistance: ''
+                material: '',
+                dimensions: '',
+                weight: '',
+                careInstructions: ''
             },
             colors: product.colors?.length > 0
                 ? product.colors.map(color => {
@@ -986,11 +986,11 @@ const ProductManagement = () => {
                 stock: Number(formData.stock),
                 category: formData.category,
                 tagline: formData.tagline || '',
-                discountPrice: formData.discountPrice ? Number(formData.discountPrice) : null,
+                discountPrice: Number(formData.discountPrice) || 0,
                 technicalSpecs: formData.technicalSpecs || {},
-                color: formData.colors.map(color => ({
-                    name: color.name,  // Name of the color
-                    hex: color.hex     // Hex value of the color (make sure it's passed here)
+                colors: formData.colors.map(color => ({
+                    name: color.name,
+                    hex: color.hex
                 })),
                 features: formData.features.filter(feature => feature.trim() !== '') || [],
             };
@@ -1026,18 +1026,27 @@ const ProductManagement = () => {
             }
 
             console.log(productFormData)
-            const url = editingProductId
+            const isEdit = Boolean(editingProductId);
+            const url = isEdit
                 ? `${import.meta.env.VITE_BACKEND_URL}/admin/edit-product/${editingProductId}`
                 : `${import.meta.env.VITE_BACKEND_URL}/admin/add-product`;
-            const response = await axios.post(url, productFormData, {
+            const response = isEdit
+                ? await axios.put(url, productFormData, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data',
+                    },
+                    withCredentials: true,
+                })
+                : await axios.post(url, productFormData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data',
                 },
-                withCredentials: true,
-            });
+                    withCredentials: true,
+                });
 
-            toast.success(editingProductId ? 'Product updated!' : 'Product added!');
+            toast.success(isEdit ? 'Product updated!' : 'Product added!');
             setShowForm(false);
             setEditingProductId(null);
             await fetchProducts();
@@ -1050,7 +1059,6 @@ const ProductManagement = () => {
             setIsSubmitting(false);
         }
     };
-
 
     // Handle product deletion
     const deleteProduct = async (productId) => {
@@ -1160,6 +1168,7 @@ const ProductManagement = () => {
                                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                                 min="0"
                                 step="0.01"
+                                required
                             />
                         </div>
 
@@ -1186,9 +1195,10 @@ const ProductManagement = () => {
                                 required
                             >
                                 <option value="">Select a category</option>
-                                <option value="smartwatches">Smartwatch</option>
-                                <option value="earbuds">Earbuds</option>
-                                <option value="headphones">Headphones</option>
+                                <option value="bags">Bags</option>
+                                <option value="wallets">Wallets</option>
+                                <option value="belts">Belts</option>
+                                <option value="accessories">Accessories</option>
                             </select>
                         </div>
                     </div>
@@ -1211,11 +1221,11 @@ const ProductManagement = () => {
                         <h3 className="text-lg font-medium mb-4">Technical Specifications</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Battery Life</label>
+                                <label className="block text-sm font-medium text-gray-700">Material</label>
                                 <input
                                     type="text"
-                                    name="technicalSpecs.batteryLife"
-                                    value={formData.technicalSpecs.batteryLife}
+                                    name="technicalSpecs.material"
+                                    value={formData.technicalSpecs.material}
                                     onChange={handleChange}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                                     required
@@ -1223,11 +1233,11 @@ const ProductManagement = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Connectivity</label>
+                                <label className="block text-sm font-medium text-gray-700">Dimensions</label>
                                 <input
                                     type="text"
-                                    name="technicalSpecs.connectivity"
-                                    value={formData.technicalSpecs.connectivity}
+                                    name="technicalSpecs.dimensions"
+                                    value={formData.technicalSpecs.dimensions}
                                     onChange={handleChange}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                                     required
@@ -1235,11 +1245,11 @@ const ProductManagement = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Noise Reduction</label>
+                                <label className="block text-sm font-medium text-gray-700">Weight</label>
                                 <input
                                     type="text"
-                                    name="technicalSpecs.noiseReduction"
-                                    value={formData.technicalSpecs.noiseReduction}
+                                    name="technicalSpecs.weight"
+                                    value={formData.technicalSpecs.weight}
                                     onChange={handleChange}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                                     required
@@ -1247,11 +1257,11 @@ const ProductManagement = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Water Resistance</label>
+                                <label className="block text-sm font-medium text-gray-700">Care Instructions</label>
                                 <input
                                     type="text"
-                                    name="technicalSpecs.waterResistance"
-                                    value={formData.technicalSpecs.waterResistance}
+                                    name="technicalSpecs.careInstructions"
+                                    value={formData.technicalSpecs.careInstructions}
                                     onChange={handleChange}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                                     required
