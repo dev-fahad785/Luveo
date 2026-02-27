@@ -92,7 +92,18 @@ const Admin = () => {
 
         } catch (error) {
             console.error("Error fetching dashboard data:", error);
-            setError("Failed to load dashboard data. Please try again later.");
+            // Keep the dashboard visible with zeroed data instead of a blocking error screen
+            setDashboardData({
+                usersCount: 0,
+                productCount: 0,
+                revenue: 0,
+                pendingOrders: 0,
+                packingOrders: 0,
+                shippedOrders: 0,
+                delieveredOrders: 0,
+                recentOrders: []
+            });
+            setError("Failed to refresh data. Showing defaults (0). Try again later.");
         } finally {
             setIsLoading(false);
         }
@@ -148,23 +159,6 @@ const Admin = () => {
         return location.pathname === path ? "bg-blue-600" : "";
     };
 
-    if (error) {
-        return (
-            <div className="flex h-screen items-center justify-center bg-gray-100">
-                <div className="text-center p-8 bg-white rounded-lg shadow-md">
-                    <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
-                    <p className="text-gray-700 mb-4">{error}</p>
-                    <button
-                        onClick={fetchData}
-                        className="bg-blue-600 px-4 py-2 rounded-lg text-white hover:bg-blue-700"
-                    >
-                        Try Again
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="flex h-screen bg-gray-50">
             {/* Mobile sidebar toggle */}
@@ -218,6 +212,12 @@ const Admin = () => {
                             <h2 className="text-3xl font-bold text-gray-800">Dashboard</h2>
                             <p className="text-gray-600">Welcome back, Admin</p>
                         </div>
+
+                        {error && (
+                            <div className="mt-4 md:mt-0 text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded">
+                                {error}
+                            </div>
+                        )}
 
                         <div className="mt-4 md:mt-0 flex space-x-3">
                             <button className="bg-white shadow-sm px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
