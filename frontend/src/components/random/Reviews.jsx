@@ -481,21 +481,7 @@ const Reviews = ({ selectedProduct }) => {
         ))}
       </div>
 
-      {/* CTA Section */}
-      <div className="text-center bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
-        <h3 className="text-2xl font-bold mb-4">Ready to Experience Premium Audio?</h3>
-        <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-          Join our community of satisfied customers and discover why our earbuds are rated among the best in the market.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button className="bg-white text-blue-600 px-8 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors">
-            Shop {currentProduct}
-          </button>
-          <button className="border-2 border-white text-white px-8 py-3 rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition-colors">
-            View All Reviews
-          </button>
-        </div>
-      </div>
+
     </div>
   );
 };
