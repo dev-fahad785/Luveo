@@ -1195,9 +1195,9 @@ const ProductManagement = () => {
                                 required
                             >
                                 <option value="">Select a category</option>
-                                <option value="bags">Bags</option>
-                                <option value="wallets">Wallets</option>
-                                <option value="belts">Belts</option>
+                                <option value="women-bags">Women's Bags</option>
+                                <option value="men-wallets">Men's Wallets</option>
+                                <option value="leather-belts">Leather Belts</option>
                                 <option value="accessories">Accessories</option>
                             </select>
                         </div>

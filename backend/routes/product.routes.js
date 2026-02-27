@@ -8,12 +8,6 @@ import mongoose from 'mongoose';
 const app = express();
 
 
-
-
-
-
-
-
 app.get('/test', (req, res) => {
     // console.log("the test route from index.js")
     res.send("the test route from index.js")
