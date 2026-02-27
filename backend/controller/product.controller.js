@@ -5,7 +5,7 @@ import productModel from '../models/product.model.js';
 cloudinaryConnect();
 
 // Allowed leather categories for validation
-const allowedCategories = ['bags', 'wallets', 'belts', 'accessories'];
+const allowedCategories = ['women-bags', 'men-wallets','leather-belts',  'accessories'];
 const requiredSpecs = ['material', 'dimensions', 'weight', 'careInstructions'];
 
 // Upload an array of files to Cloudinary and return their URLs
