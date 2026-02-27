@@ -23,11 +23,8 @@ const app = express();
 
 // Properly handle CORS origins
 const allowedOrigins = [
-    "https://www.glowzlifestyle.shop",
-    "https://glowzlifestyle.shop",
-    "https://glows-lifestyle.vercel.app",
-    "https://glows-lifestyle-chi.vercel.app",
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "https://luveo-frontend.vercel.app",
 ];
 
 if (process.env.FRONT_END_URL) {
@@ -37,11 +34,8 @@ if (process.env.FRONT_END_URL) {
 const corsOptions = {
     origin: function (origin, callback) {
         const allowedOrigins = [
-            "https://glowslifestyle.onrender.com",
-            "https://www.glowzlifestyle.shop",
-            "https://glows-lifestyle.vercel.app",
-            "https://glows-lifestyle-chi.vercel.app",
-            "http://localhost:5173"
+            "http://localhost:5173",
+            "https://luveo-frontend.vercel.app"
         ];
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
