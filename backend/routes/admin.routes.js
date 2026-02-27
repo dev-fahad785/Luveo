@@ -13,6 +13,9 @@ import bcrypt from 'bcrypt'
 const router = express();
 cloudinaryConnect();
 
+// Allowed leather categories for validation
+const allowedCategories = ['bags', 'wallets', 'belts', 'accessories'];
+
 // Helper function to upload images to Cloudinary
 const uploadImgsToCloudinary = async (files) => {
     try {
@@ -34,11 +37,19 @@ router.post('/add-product', verifyAdmin, upload.array('images'), async (req, res
 
         console.log("Product Data received from frontend:", productData);
 
-        // Validate required fields
+        // Validate required fields for leather goods
         if (!productData.name || !productData.price || !productData.description ||
-            !productData.stock || !productData.category) {
+            !productData.stock || !productData.category || !productData.tagline ||
+            !productData.discountPrice) {
             return res.status(400).json({
-                message: 'Name, price, stock, and description are required fields'
+                message: 'Name, tagline, price, discountPrice, stock, category, and description are required fields'
+            });
+        }
+
+        // Validate category
+        if (!allowedCategories.includes(productData.category)) {
+            return res.status(400).json({
+                message: `Category must be one of: ${allowedCategories.join(', ')}`
             });
         }
 
@@ -71,12 +82,37 @@ router.post('/add-product', verifyAdmin, upload.array('images'), async (req, res
             });
         }
 
+        // Validate features for leather products
+        if (!Array.isArray(productData.features) || productData.features.length === 0) {
+            return res.status(400).json({
+                message: 'Features must be a non-empty array of strings'
+            });
+        }
+
+        // Validate technical specs for leather products
+        const specs = productData.technicalSpecs;
+        const requiredSpecs = ['material', 'dimensions', 'weight', 'careInstructions'];
+        if (!specs || requiredSpecs.some(key => !specs[key])) {
+            return res.status(400).json({
+                message: 'Technical specs must include material, dimensions, weight, and careInstructions'
+            });
+        }
+
         // Upload images to Cloudinary (if any)
         const imageUrls = req.files?.length ? await uploadImgsToCloudinary(req.files) : [];
+
+        if (!imageUrls.length) {
+            return res.status(400).json({
+                message: 'At least one product image is required'
+            });
+        }
 
         // Create new product document
         const newProduct = new productModel({
             ...productData,
+            price: Number(productData.price),
+            discountPrice: Number(productData.discountPrice),
+            stock: Number(productData.stock),
             img: imageUrls // Include the image URLs in the product document
         });
 
