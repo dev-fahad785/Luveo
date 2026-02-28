@@ -10,11 +10,11 @@ const Home = () => {
             <Carousel />
             <TextScroll />
             {/* Editorial Category Section */}
-            <Heading heading="Explore" subHeading="Shop by category"/>
+            <Heading heading="Shop Top Collections" subHeading="Proudly Made in Pakistan"/>
             <Explore />
             <div style={{ padding: "20px 0" }} />
             {/* Full Product Grid */}
-            <Heading heading="The Collection" subHeading="All products" />
+            <Heading heading="Our 2026's Best Collection" subHeading="" />
             <FeaturedProducts />
         </div>
     )
