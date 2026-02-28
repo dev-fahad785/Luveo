@@ -54,6 +54,9 @@ const ProductCard = ({ product, loading }) => {
     }
   };
 
+  const primaryImage = product?.img?.[0];
+  const secondaryImage = product?.img?.[1];
+
   if (loading) return <SkeletonCard />;
 
   return (
@@ -109,14 +112,12 @@ const ProductCard = ({ product, loading }) => {
 
         {/* Image container */}
         <Link to={`/product/${product._id}`} className="block no-underline flex-grow">
-          <div className="relative w-full aspect-square overflow-hidden flex items-center justify-center bg-[#f5f5f5] rounded-[18px] p-6">
+          <div className="relative w-full aspect-square overflow-hidden flex items-center justify-center bg-[#f5f5f5] rounded-[18px] p-0">
             <img
-              src={product.img?.[0]}
+              src={hovered && secondaryImage ? secondaryImage : primaryImage}
               alt={product.name}
               loading="lazy"
-              className={`w-full h-full object-contain transition-transform duration-300 ease-out drop-shadow-[0_12px_30px_rgba(0,0,0,0.12)] ${
-                hovered ? "scale-[1.04]" : "scale-100"
-              }`}
+              className="w-full h-full object-cover transition-opacity duration-300 ease-out drop-shadow-[0_12px_30px_rgba(0,0,0,0.12)]"
             />
           </div>
         </Link>
