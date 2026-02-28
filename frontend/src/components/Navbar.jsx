@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 const SearchIcon = () => (
@@ -23,6 +23,21 @@ const CartIcon = () => (
   </svg>
 );
 
+const MenuIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <line x1="4" y1="7" x2="20" y2="7" />
+    <line x1="4" y1="12" x2="20" y2="12" />
+    <line x1="4" y1="17" x2="20" y2="17" />
+  </svg>
+);
+
+const CloseIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <line x1="5" y1="5" x2="19" y2="19" />
+    <line x1="19" y1="5" x2="5" y2="19" />
+  </svg>
+);
+
 const navItems = [
   { label: "New Arrivals", path: "/" },
   { label: "Men",          path: "/products/men" },
@@ -34,6 +49,7 @@ const navItems = [
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -45,96 +61,40 @@ const Navbar = () => {
   return (
     <>
       {/* ── Announcement Bar ── */}
-      <div
-        style={{
-          background: "var(--prada-black)",
-          color: "var(--prada-white)",
-          fontSize: "0.75rem",
-          letterSpacing: "0.05em",
-          textAlign: "center",
-          padding: "10px 16px",
-          fontFamily: "var(--font-sans)",
-          fontWeight: 600,
-        }}
-      >
-        Complimentary shipping on all orders · <span style={{ color: "var(--brand-accent)" }}>Shop the Sale</span>
+      <div className="bg-[var(--prada-black)] text-[var(--prada-white)] text-xs tracking-[0.05em] text-center py-2.5 px-4 font-[var(--font-sans)] font-semibold">
+        Complimentary shipping on all orders · <span className="text-[var(--brand-accent)]">Shop the Sale</span>
       </div>
 
       {/* ── Main Header ── */}
       <header
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-          background: scrolled ? "rgba(253,253,253,0.98)" : "var(--prada-white)",
-          backdropFilter: scrolled ? "blur(8px)" : "none",
-          borderBottom: "1px solid var(--prada-border)",
-          transition: "all 0.3s ease",
-        }}
+        className={`sticky top-0 z-50 border-b border-[var(--prada-border)] transition-all duration-300 ${
+          scrolled ? "bg-[rgba(253,253,253,0.98)] backdrop-blur" : "bg-[var(--prada-white)]"
+        }`}
       >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr auto 1fr",
-            alignItems: "center",
-            padding: "16px 40px",
-            maxWidth: "1440px",
-            margin: "0 auto",
-          }}
-        >
-          {/* Left — Nav links */}
-          <nav
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "32px",
-            }}
+        <div className="flex items-center justify-between md:grid md:grid-cols-[auto_1fr_auto] px-4 sm:px-6 md:px-10 py-3 md:py-4 max-w-[1440px] mx-auto gap-4 md:gap-6">
+          {/* Left — Logo */}
+          <Link
+            to="/"
+            className="font-[var(--font-serif)] text-[clamp(1.5rem,2.5vw,2rem)] font-bold tracking-[0.15em] uppercase text-[var(--prada-black)] select-none"
           >
+            LuvEo
+          </Link>
+
+          {/* Centre — Nav links */}
+          <nav className="hidden md:flex items-center justify-center gap-6 lg:gap-8">
             {navItems.map(item => (
               <NavLink key={item.label} to={item.path} label={item.label} />
             ))}
           </nav>
 
-          {/* Centre — Logo */}
-          <Link
-            to="/"
-            style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: "clamp(1.5rem, 2.5vw, 2rem)",
-              fontWeight: 700,
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-              color: "var(--prada-black)",
-              textDecoration: "none",
-              userSelect: "none",
-              textAlign: "center",
-            }}
-          >
-            LuvEo
-          </Link>
-
           {/* Right — Action icons */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              gap: 24,
-            }}
-          >
+          <div className="flex items-center justify-end gap-4 md:gap-6">
             <button
               onClick={() => setSearchOpen(!searchOpen)}
               aria-label="Search"
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "var(--prada-black)",
-                padding: 0,
-                display: "flex",
-                opacity: searchOpen ? 0.5 : 1,
-                transition: "opacity 0.2s",
-              }}
+              className={`text-[var(--prada-black)] transition-opacity duration-200 flex ${
+                searchOpen ? "opacity-50" : "opacity-100"
+              }`}
             >
               <SearchIcon />
             </button>
@@ -142,9 +102,7 @@ const Navbar = () => {
             <Link
               to="/profile"
               aria-label="Account"
-              style={{ color: "var(--prada-black)", display: "flex", transition: "opacity 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.opacity = "0.6"}
-              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+              className="text-[var(--prada-black)] flex transition-opacity duration-200 hover:opacity-60"
             >
               <AccountIcon />
             </Link>
@@ -152,57 +110,52 @@ const Navbar = () => {
             <Link
               to="/profile"
               aria-label="Cart"
-              style={{ color: "var(--prada-black)", display: "flex", transition: "opacity 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.opacity = "0.6"}
-              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+              className="text-[var(--prada-black)] flex transition-opacity duration-200 hover:opacity-60"
             >
               <CartIcon />
             </Link>
+
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Toggle navigation"
+              className="md:hidden text-[var(--prada-black)] flex transition-opacity duration-200 hover:opacity-70"
+            >
+              {mobileOpen ? <CloseIcon /> : <MenuIcon />}
+            </button>
           </div>
         </div>
 
+        {/* Mobile nav */}
+        {mobileOpen && (
+          <nav className="md:hidden border-t border-[var(--prada-border)] px-4 sm:px-6 py-4 bg-[var(--prada-white)] space-y-3">
+            {navItems.map(item => (
+              <Link
+                key={item.label}
+                to={item.path}
+                className="block font-[var(--font-sans)] text-sm font-semibold tracking-[0.05em] uppercase text-[var(--prada-black)]"
+                onClick={() => setMobileOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        )}
+
         {/* ── Search Bar (dropdown) ── */}
         {searchOpen && (
-          <div
-            style={{
-              borderTop: "1px solid var(--prada-border)",
-              padding: "20px 40px",
-              background: "var(--prada-white)",
-            }}
-          >
-            <div style={{ maxWidth: 600, margin: "0 auto", position: "relative" }}>
+          <div className="border-t border-[var(--prada-border)] px-10 py-5 bg-[var(--prada-white)]">
+            <div className="max-w-[600px] mx-auto relative">
               <input
                 autoFocus
                 type="text"
                 placeholder="Search collections..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                style={{
-                  width: "100%",
-                  border: "none",
-                  borderBottom: "2px solid var(--prada-black)",
-                  outline: "none",
-                  fontSize: "1rem",
-                  letterSpacing: "0.05em",
-                  padding: "10px 0",
-                  fontFamily: "var(--font-sans)",
-                  background: "transparent",
-                  color: "var(--prada-black)",
-                }}
+                className="w-full border-0 border-b-2 border-[var(--prada-black)] outline-none text-base tracking-[0.05em] py-2.5 font-[var(--font-sans)] bg-transparent text-[var(--prada-black)]"
               />
               <button
                 onClick={() => setSearchOpen(false)}
-                style={{
-                  position: "absolute",
-                  right: 0,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "1.5rem",
-                  color: "var(--prada-gray)",
-                }}
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-[1.5rem] text-[var(--prada-gray)] hover:opacity-70"
               >
                 ×
               </button>
@@ -215,31 +168,13 @@ const Navbar = () => {
 };
 
 /* Animated underline nav link */
-const NavLink = ({ to, label }) => {
-  const [hovered, setHovered] = useState(false);
-
-  return (
-    <Link
-      to={to}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        fontFamily: "var(--font-sans)",
-        fontSize: "0.85rem",
-        fontWeight: 600,
-        letterSpacing: "0.05em",
-        textTransform: "uppercase",
-        color: "var(--prada-black)",
-        textDecoration: "none",
-        paddingBottom: "4px",
-        borderBottom: hovered ? "2px solid var(--prada-black)" : "2px solid transparent",
-        transition: "border-color 0.2s ease, color 0.2s ease",
-        whiteSpace: "nowrap",
-      }}
-    >
-      {label}
-    </Link>
-  );
-};
+const NavLink = ({ to, label }) => (
+  <Link
+    to={to}
+    className="font-[var(--font-sans)] text-sm font-semibold tracking-[0.05em] uppercase text-[var(--prada-black)] pb-1 border-b-2 border-transparent hover:border-[var(--prada-black)] transition-colors duration-200 whitespace-nowrap"
+  >
+    {label}
+  </Link>
+);
 
 export default Navbar;
