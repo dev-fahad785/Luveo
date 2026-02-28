@@ -13,7 +13,7 @@ const ProductCard = ({ product, loading }) => {
   const [alert, setAlert] = useState({ show: false, message: "", type: "success" });
 
   useEffect(() => {
-    try {
+    try {   
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
         const user = JSON.parse(storedUser);
@@ -88,102 +88,99 @@ const ProductCard = ({ product, loading }) => {
       <div
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className={`relative flex flex-col bg-[#f7f7f7] rounded-[18px] px-[18px] pb-6 pt-[18px] border border-[#e2e2e2] transition-all duration-300 ease-out ${
-          hovered
-            ? "shadow-[0_16px_40px_rgba(0,0,0,0.12)] -translate-y-1"
-            : "shadow-[0_10px_22px_rgba(0,0,0,0.05)] translate-y-0"
+        className={`relative flex w-full max-w-[360px] flex-col bg-[#ededed] rounded-[26px] px-6 py-6 border border-[#d8d8d8] transition-all duration-300 ease-out ${
+          hovered ? "shadow-[0_22px_60px_rgba(0,0,0,0.16)] scale-[1.015]" : "shadow-[0_16px_44px_rgba(0,0,0,0.12)]"
         }`}
+        style={{ minWidth: "340px" }}
       >
-        {/* Discount badge - Red, rounded, bold top right of the whole card */}
+        {/* Discount badge */}
         {product.price > product.discountPrice && (
-          <span
-            className="absolute top-[14px] right-[14px] z-10 font-sans text-[0.74rem] font-extrabold tracking-[0.03em] bg-[#e53945] text-white px-3 py-1 rounded-full shadow-[0_6px_16px_rgba(229,57,69,0.25)]"
-          >
+          <span className="absolute top-4 right-4 z-10 text-[0.7rem] font-semibold uppercase tracking-[0.05em] bg-[#ff2d55] text-white px-3 py-1 rounded-full shadow-[0_8px_18px_rgba(255,45,85,0.25)]">
             SAVE {Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
           </span>
         )}
 
         {/* Out of stock overlay */}
         {product.stock <= 0 && (
-          <div className="absolute top-4 left-4 z-10 bg-black/70 text-white px-2.5 py-1 rounded-md font-sans text-[0.75rem] font-bold tracking-[0.05em] uppercase">
+          <div className="absolute top-4 left-4 z-10 bg-black/70 text-white px-2.5 py-1 rounded-md text-[0.75rem] font-semibold tracking-[0.05em] uppercase">
             Sold Out
           </div>
         )}
 
         {/* Image container */}
         <Link to={`/product/${product._id}`} className="block no-underline flex-grow">
-          <div className="relative w-full aspect-square overflow-hidden flex items-center justify-center bg-white rounded-[14px] border border-[#ededed]">
+          <div className="relative w-full aspect-square overflow-hidden flex items-center justify-center bg-[#f5f5f5] rounded-[18px] p-6">
             <img
               src={product.img?.[0]}
               alt={product.name}
               loading="lazy"
-              className={`w-[92%] h-[92%] object-contain transition-transform duration-300 ease-out ${hovered ? "scale-[1.06]" : "scale-100"}`}
+              className={`w-full h-full object-contain transition-transform duration-300 ease-out drop-shadow-[0_12px_30px_rgba(0,0,0,0.12)] ${
+                hovered ? "scale-[1.04]" : "scale-100"
+              }`}
             />
           </div>
         </Link>
 
         {/* Info below image */}
-        <div className="pt-4 flex flex-col gap-[10px]">
-          
+        <div className="pt-5 flex flex-col gap-4">
           {/* Title */}
           <Link to={`/product/${product._id}`} className="no-underline text-inherit">
-            <h3 className="font-heading text-[1.08rem] font-extrabold text-[#0f0f0f] leading-[1.16] m-0 overflow-hidden text-ellipsis whitespace-nowrap">
-              {product.name}
+            <h3 className="text-2xl font-extrabold text-[#111111] tracking-tight leading-[1.15] m-0">
+              {product.name || "ATOM-X Pro"}
             </h3>
           </Link>
-          
+
           {/* Color Swatches */}
-          <div className="flex gap-[6px]">
-            {product.colors && product.colors.length > 0 ? (
-              product.colors.slice(0, 6).map((color, idx) => (
-                <span
-                  key={`${color.hex}-${idx}`}
-                  className="w-[15px] h-[15px] rounded-full border-2 border-white outline outline-1 outline-[#d0d0d0] shadow-[0_2px_5px_rgba(0,0,0,0.06)]"
-                  style={{ background: color.hex }}
-                />
-              ))
-            ) : (
-              <>
-                <span className="w-[15px] h-[15px] rounded-full border-2 border-white outline outline-1 outline-[#cfcfcf] shadow-[0_2px_5px_rgba(0,0,0,0.06)]" style={{ background: "#a5673f" }} />
-                <span className="w-[15px] h-[15px] rounded-full border-2 border-white outline outline-1 outline-[#cfcfcf] shadow-[0_2px_5px_rgba(0,0,0,0.06)]" style={{ background: "#2f4a5f" }} />
-                <span className="w-[15px] h-[15px] rounded-full border-2 border-white outline outline-1 outline-[#cfcfcf] shadow-[0_2px_5px_rgba(0,0,0,0.06)]" style={{ background: "#0f0f0f" }} />
-                <span className="w-[15px] h-[15px] rounded-full border-2 border-white outline outline-1 outline-[#cfcfcf] shadow-[0_2px_5px_rgba(0,0,0,0.06)]" style={{ background: "#0d5c45" }} />
-              </>
-            )}
+          <div className="flex items-center gap-2">
+            {(product.colors && product.colors.length > 0 ? product.colors.slice(0, 5) : [
+              { hex: "#e8ddcf" },
+              { hex: "#7c6ad6" },
+              { hex: "#9c6b4f" },
+              { hex: "#3d7f5f" },
+              { hex: "#0f0f0f" },
+            ]).map((color, idx) => (
+              <span
+                key={`${color.hex}-${idx}`}
+                className={`w-[20px] h-[20px] rounded-full shadow-[0_3px_8px_rgba(0,0,0,0.08)] outline outline-1 outline-[#d7d7d7] ${
+                  idx === 0 ? "ring-2 ring-offset-2 ring-[#0f0f0f] ring-offset-[#ededed]" : ""
+                }`}
+                style={{ background: color.hex }}
+              />
+            ))}
           </div>
 
           {/* Pricing */}
-          <div className="flex items-baseline gap-2 mt-[2px]">
+          <div className="flex items-baseline gap-2">
             {product.price > product.discountPrice && (
-              <span className="font-sans text-[0.92rem] font-bold text-[#9c9c9c] line-through">
-                Rs.{product.price?.toLocaleString()}
+              <span className="text-base font-medium text-[#b0b0b0] line-through">
+                Rs.{product.price?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </span>
             )}
-            <span className="font-sans text-[1.08rem] font-black text-[#0f0f0f]">
-              Rs.{product.discountPrice?.toLocaleString()}
+            <span className="text-xl font-bold text-[#0b0b0b]">
+              Rs.{product.discountPrice?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </span>
           </div>
         </div>
-        
+
         {/* Hover Quick Add to Cart Button */}
         <AnimatePresence>
-            {hovered && product.stock > 0 && (
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute bottom-4 left-4 right-4"
-                >
-                    <button
-                        onClick={(e) => { e.preventDefault(); addToCart(product._id); }}
-                        disabled={isAddingToCart}
-                        className="w-full py-3 rounded-lg bg-[#0f0f0f] text-white font-sans text-[0.9rem] font-bold shadow-[0_6px_16px_rgba(0,0,0,0.15)] cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                    >
-                        {isAddingToCart ? "Adding..." : "Add to Cart"}
-                    </button>
-                </motion.div>
-            )}
+          {hovered && product.stock > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+              className="absolute bottom-5 left-6 right-6"
+            >
+              <button
+                onClick={(e) => { e.preventDefault(); addToCart(product._id); }}
+                disabled={isAddingToCart}
+                className="w-full py-3 rounded-xl bg-[#111111] text-white text-[0.95rem] font-semibold shadow-[0_10px_24px_rgba(0,0,0,0.15)] transition hover:-translate-y-[2px] hover:shadow-[0_14px_30px_rgba(0,0,0,0.18)] disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isAddingToCart ? "Adding..." : "Add to Cart"}
+              </button>
+            </motion.div>
+          )}
         </AnimatePresence>
 
       </div>
