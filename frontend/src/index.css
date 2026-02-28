@@ -17,9 +17,9 @@
   --brand-accent: #E53935;
   /* Red badge/accent color */
 
-  --font-serif: 'Montserrat', 'Outfit', sans-serif;
+  --font-serif: 'Montserrat', sans-serif;
   /* Headings */
-  --font-sans: 'Assistant', 'Inter', sans-serif;
+  --font-sans: 'Montserrat', sans-serif;
   /* Body */
 
   --tracking-luxury: 0.1em;
