@@ -1,6 +1,7 @@
 const slides = [
   {
     image: "https://www.waldorleather.com/cdn/shop/files/travel_tan_brown_2.jpg?v=1752846659&width=1100",
+    mobileImage: "https://www.waldorleather.com/cdn/shop/files/travel_navy_grey_4.5.jpg?v=1752426246",
     category: "New Arrivals",
     title: "Everyday Luxury",
     cta: "Shop the Collection",
@@ -49,11 +50,14 @@ const Carousel = () => {
 const SlideItem = ({ slide, textVisible }) => {
   return (
     <div className="relative h-screen w-full overflow-hidden">
-      <img
-        src={slide.image}
-        alt={slide.title}
-        className="absolute inset-0 h-full w-full object-cover object-center scale-[1.03]"
-      />
+      <picture>
+        <source media="(max-width: 640px)" srcSet={slide.mobileImage || slide.image} />
+        <img
+          src={slide.image}
+          alt={slide.title}
+          className="absolute inset-0 h-full w-full object-cover object-center scale-[1.03]"
+        />
+      </picture>
 
       <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/35 to-black/10" />
 
