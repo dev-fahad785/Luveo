@@ -40,7 +40,7 @@ const Carousel = () => {
   const hero = slides[0];
 
   return (
-    <section className="relative w-full bg-black">
+    <section className="relative w-full h-screen bg-black">
       <SlideItem slide={hero} textVisible />
     </section>
   );
@@ -48,7 +48,7 @@ const Carousel = () => {
 
 const SlideItem = ({ slide, textVisible }) => {
   return (
-    <div className="relative h-[80vh] min-h-[520px] max-h-[820px] overflow-hidden">
+    <div className="relative h-screen w-full overflow-hidden">
       <img
         src={slide.image}
         alt={slide.title}

@@ -59,7 +59,7 @@ const Navbar = () => {
   }, []);
 
   return (
-    <>
+    <div className="absolute inset-x-0 top-0 z-50">
       {/* ── Announcement Bar ── */}
       <div className="bg-[var(--prada-black)] text-[var(--prada-white)] text-xs tracking-[0.05em] text-center py-2.5 px-4 font-[var(--font-sans)] font-semibold">
         Complimentary shipping on all orders · <span className="text-[var(--brand-accent)]">Shop the Sale</span>
@@ -67,7 +67,7 @@ const Navbar = () => {
 
       {/* ── Main Header ── */}
       <header
-        className={`sticky top-0 z-50 border-b border-[var(--prada-border)] transition-all duration-300 ${
+        className={`border-b border-[var(--prada-border)] transition-all duration-300 ${
           scrolled ? "bg-[rgba(253,253,253,0.98)] backdrop-blur" : "bg-[var(--prada-white)]"
         }`}
       >
@@ -163,7 +163,7 @@ const Navbar = () => {
           </div>
         )}
       </header>
-    </>
+    </div>
   );
 };
 
