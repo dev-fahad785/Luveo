@@ -1,6 +1,6 @@
 const slides = [
   {
-    image: "https://images.unsplash.com/photo-1531190260877-c8d11eb5afaf?q=80&w=1470&auto=format&fit=crop",
+    image: "https://www.waldorleather.com/cdn/shop/files/travel_tan_brown_2.jpg?v=1752846659&width=1100",
     category: "New Arrivals",
     title: "Everyday Luxury",
     cta: "Shop the Collection",
