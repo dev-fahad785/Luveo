@@ -2,6 +2,7 @@ import Carousel from './components/Carousel'
 import Explore from './components/Explore'
 import Heading from './components/Heading'
 import FeaturedProducts from './components/FeaturedProducts'
+import ExploreWithUs from './components/ExploreWithUs'
 // import { TextScroll } from './components/ScrollText'
 
 const Home = () => {
@@ -16,6 +17,7 @@ const Home = () => {
             {/* Full Product Grid */}
             <Heading heading="Our 2026's Best Collection" subHeading="" />
             <FeaturedProducts />
+            <ExploreWithUs />
         </div>
     )
 }
