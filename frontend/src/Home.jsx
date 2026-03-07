@@ -3,6 +3,7 @@ import Explore from './components/Explore'
 import Heading from './components/Heading'
 import FeaturedProducts from './components/FeaturedProducts'
 import ExploreWithUs from './components/ExploreWithUs'
+import RestockShowcase from './components/RestockShowcase'
 // import { TextScroll } from './components/ScrollText'
 
 const Home = () => {
@@ -18,6 +19,8 @@ const Home = () => {
             <Heading heading="Our 2026's Best Collection" subHeading="" />
             <FeaturedProducts />
             <ExploreWithUs />
+            <Heading heading="Our Restock Showcase" subHeading="Coming Soon!" />
+            <RestockShowcase />
         </div>
     )
 }
