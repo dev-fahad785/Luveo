@@ -1,67 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-
-const AccordionSection = ({ title, items }) => {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div style={{ borderTop: "1px solid rgba(255,255,255,0.15)" }}>
-      <button
-        onClick={() => setOpen(!open)}
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          width: "100%",
-          padding: "20px 0",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          color: "var(--prada-white)",
-        }}
-      >
-        <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-          {title}
-        </span>
-        <span style={{
-          fontSize: "1.2rem", fontWeight: 300,
-          transition: "transform 0.3s ease",
-          transform: open ? "rotate(45deg)" : "none",
-          lineHeight: 1,
-        }}>
-          +
-        </span>
-      </button>
-      {open && (
-        <ul style={{ margin: "0 0 24px", padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 12 }}>
-          {items.map(item => (
-            <li key={item.label}>
-              <a
-                href={item.href}
-                style={{
-                  fontFamily: "var(--font-sans)", fontSize: "0.9rem",
-                  letterSpacing: "0.05em", color: "rgba(255,255,255,0.7)",
-                  textDecoration: "none", transition: "color 0.2s, transform 0.2s",
-                  display: "inline-block"
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.color = "#fff";
-                  e.currentTarget.style.transform = "translateX(4px)";
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.color = "rgba(255,255,255,0.7)";
-                  e.currentTarget.style.transform = "translateX(0)";
-                }}
-              >
-                {item.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-};
+// import React from "react";
+import { Link } from "react-router-dom";
 
 const InstagramIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -77,136 +15,96 @@ const FacebookIcon = () => (
   </svg>
 );
 
-const TiktokIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.79a8.18 8.18 0 004.78 1.52V6.86a4.85 4.85 0 01-1.01-.17z"/>
+const TwitterIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <path d="M20.8 5.5c-.7.3-1.5.5-2.3.6a3.6 3.6 0 001.6-2 7 7 0 01-2.3.9 3.5 3.5 0 00-6 2.4c0 .3 0 .6.1.8a10 10 0 01-7.3-3.7 3.5 3.5 0 001.1 4.7c-.5 0-1-.2-1.4-.4a3.5 3.5 0 002.8 3.5 3.6 3.6 0 01-1.4.1 3.5 3.5 0 003.3 2.4A7 7 0 013 18.6a9.9 9.9 0 005.4 1.6c6.5 0 10-5.4 10-10v-.4c.7-.5 1.3-1.1 1.8-1.8z" />
   </svg>
 );
 
-const SECTIONS = [
-  {
-    title: "Company",
-    items: [
-      { label: "About Luveo", href: "#" },
-      { label: "Careers",     href: "#" },
-      { label: "Press",       href: "#" },
-    ],
-  },
-  {
-    title: "Customer Service",
-    items: [
-      { label: "My Account",          href: "/profile" },
-      { label: "Shipping & Delivery", href: "#" },
-      { label: "Returns & Exchanges", href: "#" },
-      { label: "Contact Us",          href: "#" },
-    ],
-  },
-  {
-    title: "Legal",
-    items: [
-      { label: "Privacy Policy",  href: "#" },
-      { label: "Terms of Use",    href: "#" },
-      { label: "Cookie Policy",   href: "#" },
-    ],
-  },
-];
+const NAV = {
+  Support: [
+    { label: "Contact Us", href: "#" },
+    { label: "Terms of Service", href: "#" },
+    { label: "Refunds & Returns", href: "#" },
+    { label: "Shipping", href: "#" },
+  ],
+  "Quick Links": [
+    { label: "Magnetic wallets", href: "#" },
+    { label: "Ultra Slim", href: "#" },
+    { label: "Premium Long wallets", href: "#" },
+    { label: "Travel", href: "#" },
+    { label: "Accessories", href: "#" },
+    { label: "Briefcases and Luggage", href: "#" },
+    { label: "Shop All", href: "#" },
+  ],
+  "Sales Explore": [],
+};
 
-const SOCIALS = [
-  { Icon: InstagramIcon, href: "https://www.instagram.com/glowzlifestyle/",                label: "Instagram" },
-  { Icon: FacebookIcon,  href: "https://www.facebook.com/profile.php?id=61558535894505",   label: "Facebook"  },
-  { Icon: TiktokIcon,    href: "https://www.tiktok.com/@glowzlifestyle1",                  label: "TikTok"    },
-];
+const Footer = () => {
+  return (
+    <footer className="bg-transparent">
+      <div className="mx-auto flex max-w-[1240px] flex-col gap-10 px-6 pb-16 pt-12">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-[1fr_1fr_1fr_1.2fr]">
+          {Object.entries(NAV).map(([title, items]) => (
+            <div key={title} className="text-left">
+              <p className="mb-4 font-sans text-[15px] font-semibold tracking-[0.06em] text-black">
+                {title}
+              </p>
+              <ul className="flex flex-col gap-2">
+                {items.map((item) => (
+                  <li key={item.label} className="text-[15px] font-medium text-[#1a1a1a]">
+                    <a href={item.href} className="transition-colors hover:text-black/70">
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
-const Footer = () => (
-  <footer style={{ background: "var(--prada-black)", color: "var(--prada-white)", padding: "80px clamp(20px, 6vw, 100px) 0" }}>
-    {/* Logo */}
-    <div style={{ textAlign: "center", marginBottom: 64 }}>
-      <Link
-        to="/"
-        style={{
-          fontFamily: "var(--font-serif)",
-          fontSize: "clamp(2rem, 5vw, 3rem)",
-          fontWeight: 700,
-          letterSpacing: "0.2em",
-          textTransform: "uppercase",
-          color: "var(--prada-white)",
-          textDecoration: "none",
-        }}
-      >
-        LuvEo
-      </Link>
-    </div>
+          {/* Newsletter */}
+          <div className="flex flex-col gap-4 text-left md:items-start">
+            <p className="font-sans text-[14px] font-semibold text-black">
+              Explore With us! Sign up to receive exclusive access to product drops, company news, and more.
+            </p>
+            <form className="flex w-full max-w-[420px] gap-2" onSubmit={(e) => e.preventDefault()}>
+              <label className="sr-only" htmlFor="footer-email">Email</label>
+              <input
+                id="footer-email"
+                type="email"
+                placeholder="Email"
+                required
+                className="w-full rounded-[12px] border border-black/10 bg-white px-4 py-3 text-[15px] font-medium text-black outline-none focus:border-black"
+              />
+              <button
+                type="submit"
+                className="rounded-[12px] bg-black px-5 py-3 text-[15px] font-semibold text-white transition hover:bg-[#1a1a1a]"
+              >
+                Submit
+              </button>
+            </form>
 
-    {/* Accordion columns */}
-    <div style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-      gap: "0 clamp(32px, 5vw, 80px)",
-      maxWidth: 1080,
-      margin: "0 auto 60px",
-    }}>
-      {SECTIONS.map(s => <AccordionSection key={s.title} title={s.title} items={s.items} />)}
-    </div>
+            <div className="flex items-center gap-4 pt-2 text-black">
+              <a href="https://www.facebook.com" aria-label="Facebook" className="transition hover:text-black/60">
+                <FacebookIcon />
+              </a>
+              <a href="https://www.instagram.com" aria-label="Instagram" className="transition hover:text-black/60">
+                <InstagramIcon />
+              </a>
+              <a href="https://www.twitter.com" aria-label="Twitter" className="transition hover:text-black/60">
+                <TwitterIcon />
+              </a>
+            </div>
+          </div>
+        </div>
 
-    {/* Social icons */}
-    <div style={{
-      display: "flex",
-      justifyContent: "center",
-      gap: 32,
-      padding: "32px 0",
-      borderTop: "1px solid rgba(255,255,255,0.15)",
-    }}>
-      {SOCIALS.map(({ Icon, href, label }) => (
-        <a
-          key={label}
-          href={href}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={label}
-          style={{
-            color: "rgba(255,255,255,0.6)",
-            transition: "all 0.2s ease",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "48px",
-            height: "48px",
-            borderRadius: "50%",
-            background: "rgba(255,255,255,0.05)",
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.color = "#fff";
-            e.currentTarget.style.background = "rgba(255,255,255,0.15)";
-            e.currentTarget.style.transform = "translateY(-4px)";
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.color = "rgba(255,255,255,0.6)";
-            e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-            e.currentTarget.style.transform = "translateY(0)";
-          }}
-        >
-          <Icon />
-        </a>
-      ))}
-    </div>
-
-    {/* Bottom row */}
-    <div style={{
-      borderTop: "1px solid rgba(255,255,255,0.1)",
-      padding: "24px 0",
-      textAlign: "center",
-    }}>
-      <p style={{
-        fontFamily: "var(--font-sans)",
-        fontSize: "0.8rem",
-        letterSpacing: "0.1em",
-        color: "rgba(255,255,255,0.4)",
-        margin: 0,
-      }}>
-        © {new Date().getFullYear()} Luveo. All rights reserved.
-      </p>
-    </div>
-  </footer>
-);
+        <div className="flex flex-col items-center justify-between gap-3 border-t border-black/10 pt-6 text-center text-[12px] font-medium text-black/60 md:flex-row md:text-left">
+          <Link to="/" className="font-serif text-[18px] font-bold tracking-[0.12em] uppercase text-black">Luveo</Link>
+          <p>© {new Date().getFullYear()} Luveo. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+  );
+};
 
 export default Footer;
