@@ -19,7 +19,7 @@ import Analytics from './components/Analytics'
 import WhatsAppButton from './components/WhatsappBtn'
 import NotificationPopup from './components/Notification'
 import AddNotification from './components/AddNotification'
-import RandomOrder from './components/random/RandomOrder'
+// import RandomOrder from './components/random/RandomOrder'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 
@@ -64,7 +64,7 @@ const App = () => {
       {role !== "admin" && (
         console.log("🔵 Non-admin user detected, showing RandomOrder and WhatsAppButton"),
         <>
-          <RandomOrder />
+          {/* <RandomOrder /> */}
           <WhatsAppButton />
           <NotificationPopup />
         </>
