@@ -114,7 +114,7 @@ const ProductDisplay = () => {
     const discountPercentage = Math.round(((product.price - product.discountPrice) / product.price) * 100);
 
     return (
-        <div className="bg-[#f7f7f7] min-h-screen pb-20">
+        <div className="bg-[#f7f7f7] min-h-screen pb-20 pt-32 md:pt-36">
             {/* Alerts & Modals */}
             {alertProps.visible && (
                 <AlertMessage message={alertProps.message} type={alertProps.type} onClose={handleCloseAlert} duration={4000} showCloseButton />
