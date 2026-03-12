@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import AdminBackLink from './AdminBackLink';
 
 const NotificationForm = () => {
     const [message, setMessage] = useState('');
@@ -60,6 +61,7 @@ const NotificationForm = () => {
 
     return (
         <div className="max-w-md mx-auto p-6 bg-white rounded-xl shadow-md space-y-4 mt-10">
+            <AdminBackLink />
             <h2 className="text-2xl font-bold text-center">Notification Manager</h2>
 
             {loading ? (

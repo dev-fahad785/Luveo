@@ -735,6 +735,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify'; // Assuming you're using react-toastify for notifications
 import axios from 'axios';
+import AdminBackLink from './AdminBackLink';
 
 const ProductManagement = () => {
     // State for product list and loading
@@ -1088,6 +1089,8 @@ const ProductManagement = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
+            <AdminBackLink />
+
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Product Management</h1>
                 {!showForm && (

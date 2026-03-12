@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'
+import AdminBackLink from './AdminBackLink';
 
 const Analytics = () => {
     const [data, setData] = useState([]);
@@ -70,6 +71,7 @@ const Analytics = () => {
     return (
         <div className="bg-gray-50 min-h-screen p-6">
             <div className="max-w-7xl mx-auto">
+                <AdminBackLink />
                 {/* Header */}
                 <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                     <h1 className="text-3xl font-bold text-gray-800">Product Analytics Dashboard</h1>

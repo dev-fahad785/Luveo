@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import AdminBackLink from './AdminBackLink';
 
 const AdminOrdersPage = () => {
     const [orders, setOrders] = useState([]);
@@ -144,6 +145,7 @@ const AdminOrdersPage = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
+            <AdminBackLink />
             <h1 className="text-3xl font-bold mb-6">Order Management</h1>
 
             {/* Filters and Search */}

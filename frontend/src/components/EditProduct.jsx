@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import AdminBackLink from './AdminBackLink';
 
 const EditProduct = () => {
     const { id } = useParams();
@@ -113,6 +114,7 @@ const EditProduct = () => {
 
     return (
         <div className="max-w-5xl mx-auto bg-gray-100 p-6 md:p-8 rounded-lg">
+            <AdminBackLink />
             <h2 className="text-lg font-bold mb-4">Edit Product</h2>
 
             {Object.entries(editableFields).map(([key, value]) => (

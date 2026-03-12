@@ -147,7 +147,7 @@ const Admin = () => {
 
     // Navigation items
     const navItems = [
-        { path: "/", label: "Dashboard", icon: "🏠" },
+        // { path: "/", label: "Dashboard", icon: "🏠" },
         { path: "/add-product", label: "Products", icon: "📦" },
         { path: "/add-users", label: "Users", icon: "👥" },
         { path: "/analytics", label: "Analytics", icon: "📊" },
