@@ -44,32 +44,34 @@ const Admin = () => {
         setIsLoading(true);
         setError(null);
 
-        try {
-            // Use Promise.all for parallel API requests
-            const [usersResponse, productsResponse, revenueResponse, ordersResponse] = await Promise.all([
-                fetch(`${import.meta.env.VITE_BACKEND_URL}/user/get-users`),
-                fetch(`${import.meta.env.VITE_BACKEND_URL}/product/get-products`),
-                fetch(`${import.meta.env.VITE_BACKEND_URL}/analytics/total-revenue`),
-                fetch(`${import.meta.env.VITE_BACKEND_URL}/analytics/all-orders`)
-            ]);
-
-            // Check if any responses failed
-            if (!usersResponse.ok || !productsResponse.ok || !revenueResponse.ok || !ordersResponse.ok) {
-                throw new Error('One or more API requests failed');
+        // Helper that always returns a safe object even on empty/404
+        const safeFetch = async (url, fallback) => {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) {
+                    console.warn(`Non-200 from ${url}:`, res.status);
+                    return fallback;
+                }
+                const data = await res.json().catch(() => fallback);
+                return data ?? fallback;
+            } catch (err) {
+                console.error(`Error fetching ${url}:`, err);
+                return fallback;
             }
+        };
 
-            // Parse JSON responses in parallel
+        try {
+            // Fetch in parallel, each with its own fallback shape
             const [usersData, productsData, revenueData, ordersData] = await Promise.all([
-                usersResponse.json(),
-                productsResponse.json(),
-                revenueResponse.json(),
-                ordersResponse.json()
+                safeFetch(`${import.meta.env.VITE_BACKEND_URL}/user/get-users`, []),
+                safeFetch(`${import.meta.env.VITE_BACKEND_URL}/product/get-products`, { products: [] }),
+                safeFetch(`${import.meta.env.VITE_BACKEND_URL}/analytics/total-revenue`, { totalRevenue: 0 }),
+                safeFetch(`${import.meta.env.VITE_BACKEND_URL}/analytics/all-orders`, { orders: [] })
             ]);
 
             // Process orders data with validation
             const orders = ordersData?.orders || [];
-            let pending = 0, packing = 0, shipped = 0, delievered=0;
-            console.log(orders)
+            let pending = 0, packing = 0, shipped = 0, delievered = 0;
             orders.forEach(order => {
                 const status = order?.orderStatus?.toLowerCase();
                 if (status === "pending") pending++;
@@ -80,14 +82,14 @@ const Admin = () => {
 
             // Update state with all data
             setDashboardData({
-                usersCount: usersData?.length || 0,
+                usersCount: Array.isArray(usersData) ? usersData.length : 0,
                 productCount: productsData?.products?.length || 0,
-                revenue: revenueData?.totalRevenue || 0,
+                revenue: Number(revenueData?.totalRevenue) || 0,
                 pendingOrders: pending,
                 packingOrders: packing,
                 shippedOrders: shipped,
                 delieveredOrders: delievered,
-                recentOrders: orders // Fixed naming
+                recentOrders: orders
             });
 
         } catch (error) {
@@ -103,7 +105,7 @@ const Admin = () => {
                 delieveredOrders: 0,
                 recentOrders: []
             });
-            setError("Failed to refresh data. Showing defaults (0). Try again later.");
+            setError(null);
         } finally {
             setIsLoading(false);
         }
