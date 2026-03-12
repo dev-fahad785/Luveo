@@ -274,7 +274,7 @@ const AdminOrdersPage = () => {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         {/* WhatsApp Button */}
                                         <a
-                                            href={`https://wa.me/${order.phone}?text=Hello, Dear Customer ${order.name}, your order had been successfully placed on GlowzLifestyle.shop of RS ${order.orderTotal}. Your Order status  is : ${order.orderStatus}, and it will be delievered to you within 5-7 working days.`}
+                                            href={`https://wa.me/${order.phone}?text=Hello, Dear Customer ${order.name}, your order had been successfully placed on Luveo of RS ${order.orderTotal}. Your Order status  is : ${order.orderStatus}, and it will be delievered to you within 5-7 working days.`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="inline-block px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition duration-300"
