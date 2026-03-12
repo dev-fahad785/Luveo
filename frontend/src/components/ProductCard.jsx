@@ -9,7 +9,6 @@ const ProductCard = ({ product, loading }) => {
   const [userId, setUserId] = useState(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const [showGuestSignin, setShowGuestSignin] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: "", type: "success" });
 
   useEffect(() => {
@@ -17,7 +16,7 @@ const ProductCard = ({ product, loading }) => {
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
         const user = JSON.parse(storedUser);
-        setUserId(user?.id || "");
+        setUserId(user?.id || user?._id || "");
       }
     } catch (e) {
       console.error(e);
@@ -27,26 +26,34 @@ const ProductCard = ({ product, loading }) => {
   const showAlert = (message, type = "success") => setAlert({ show: true, message, type });
   const hideAlert = () => setAlert(prev => ({ ...prev, show: false }));
 
-  const handleGuestAcct = async () => {
+  const ensureUserId = async () => {
+    if (userId) return userId;
+
     try {
       const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/guest-signup`);
       const user = res.data?.newUser;
-      if (user) {
-        localStorage.setItem("user", JSON.stringify(user));
-        setShowGuestSignin(false);
-        window.location.reload();
-      }
+      const id = user?.id || user?._id;
+
+      if (!id) throw new Error("Unable to create guest account");
+
+      localStorage.setItem("user", JSON.stringify(user));
+      setUserId(id);
+      return id;
     } catch (e) {
       showAlert("Error creating guest account", "error");
+      throw e;
     }
   };
 
   const addToCart = async (productId) => {
-    if (!userId) { setShowGuestSignin(true); return; }
     setIsAddingToCart(true);
+
     try {
-      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/product/add-to-cart`, { productId, userId });
-      showAlert(res.data.message, "success");
+      const ensuredUserId = await ensureUserId();
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/product/add-to-cart`, { productId, userId: ensuredUserId });
+
+      showAlert(res.data.message || "Added to cart", "success");
+      navigate("/profile");
     } catch (e) {
       showAlert(e.response?.data?.message || "Failed to add to cart", "error");
     } finally {
@@ -64,29 +71,6 @@ const ProductCard = ({ product, loading }) => {
       {alert.show && (
         <AlertMessage message={alert.message} type={alert.type} onClose={hideAlert} duration={4000} showCloseButton />
       )}
-      {showGuestSignin && (
-        <div className="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center">
-          <div className="bg-white px-8 py-8 max-w-[360px] w-[90%] text-center rounded-2xl shadow-lg">
-            <p className="font-sans text-[1.3rem] font-bold mb-2">Sign in</p>
-            <p className="font-sans text-sm text-[#6c6c6c] mb-6">Create a guest account to add items to your cart.</p>
-            <div className="flex justify-center gap-3">
-              <button
-                onClick={() => setShowGuestSignin(false)}
-                className="rounded-lg border border-[#0f0f0f] px-4 py-2 font-sans text-sm font-semibold text-[#0f0f0f] hover:bg-[#0f0f0f] hover:text-white transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleGuestAcct}
-                className="rounded-lg bg-[#0f0f0f] px-4 py-2 font-sans text-sm font-semibold text-white hover:bg-[#1a1a1a] transition"
-              >
-                Continue as Guest
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── Main Rounded Card Container ── */}
       <div
         onMouseEnter={() => setHovered(true)}

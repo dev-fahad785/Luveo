@@ -25,7 +25,6 @@ const ProductDisplay = () => {
     
     // Image gallery state
     const [selectedImageIndex, setSelectedImageIndex] = useState(0); 
-    const [showGuestSign, setShowGuestSignin] = useState(false);
     
     // Alert state
     const [alertProps, setAlertProps] = useState({ message: "", type: "success", visible: false });
@@ -36,7 +35,7 @@ const ProductDisplay = () => {
         if (storedUser) {
             try {
                 const user = JSON.parse(storedUser);
-                setUserId(user?.id || "");
+                setUserId(user?.id || user?._id || "");
             } catch (e) { console.error(e); }
         }
     }, []);
@@ -63,31 +62,36 @@ const ProductDisplay = () => {
     const showNotification = (message, type = "success") => setAlertProps({ message, type, visible: true });
     const handleCloseAlert = () => setAlertProps(prev => ({ ...prev, visible: false }));
 
-    const handleGuestAcct = async () => {
+    const ensureUserId = async () => {
+        if (userId) return userId;
+
         try {
-            setLoading(true);
             const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/guest-signup`);
             const user = response.data?.newUser;
-            if (user) {
-                localStorage.setItem("user", JSON.stringify(user));
-                setShowGuestSignin(false);
-                setLoading(false);
-                window.location.reload();
-            }
-        } catch (error) { console.error(error); setLoading(false); }
+            const id = user?.id || user?._id;
+
+            if (!id) throw new Error("Unable to create guest account");
+
+            localStorage.setItem("user", JSON.stringify(user));
+            setUserId(id);
+            return id;
+        } catch (error) {
+            showNotification("Error creating guest account", "error");
+            throw error;
+        }
     };
 
     const addToCart = async (productId, buyNow = false) => {
-        if (!userId) { setShowGuestSignin(true); return; }
         if (buyNow) setIsBuyingNow(true); else setIsAddingToCart(true);
 
         try {
-            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/product/add-to-cart`, { productId, userId });
+            const ensuredUserId = await ensureUserId();
+            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/product/add-to-cart`, { productId, userId: ensuredUserId });
             showNotification(
                 buyNow ? "Product purchased successfully! Redirecting..." : "Added to cart successfully!",
                 "success"
             );
-            setTimeout(() => window.location.href = buyNow ? '/checkout' : '/profile', 1500);
+            navigate(buyNow ? '/checkout' : '/profile');
         } catch (error) {
             showNotification(error.response?.data?.message || "Error adding to cart", "error");
         } finally {
@@ -114,19 +118,6 @@ const ProductDisplay = () => {
             {/* Alerts & Modals */}
             {alertProps.visible && (
                 <AlertMessage message={alertProps.message} type={alertProps.type} onClose={handleCloseAlert} duration={4000} showCloseButton />
-            )}
-
-            {showGuestSign && (
-                <div className="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center">
-                    <div className="bg-white px-8 py-8 max-w-[360px] w-[90%] text-center rounded-2xl shadow-xl">
-                        <p className="font-serif text-[1.3rem] font-bold mb-2">Sign in</p>
-                        <p className="font-sans text-sm text-[#6c6c6c] mb-6">Create a guest account to continue checkout.</p>
-                        <div className="flex justify-center gap-3">
-                            <button onClick={() => setShowGuestSignin(false)} className="rounded-lg border border-[#0f0f0f] px-4 py-2 font-sans text-sm font-semibold text-[#0f0f0f] hover:bg-[#0f0f0f] hover:text-white transition">Cancel</button>
-                            <button onClick={handleGuestAcct} className="rounded-lg bg-[#0f0f0f] px-4 py-2 font-sans text-sm font-semibold text-white hover:bg-[#1a1a1a] transition">Continue as Guest</button>
-                        </div>
-                    </div>
-                </div>
             )}
 
             {/* Main Product Layout */}
