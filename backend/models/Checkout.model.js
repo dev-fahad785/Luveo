@@ -86,7 +86,7 @@ const checkoutSchema = new mongoose.Schema({
     },
     orderStatus: {
         type: String,
-        enum: ['pending', 'dispatched', 'completed',],
+        enum: ['pending', 'packing', 'shipped', 'delivered', 'cancelled'], // Allowed order statuses
         default: 'pending'
     },
 });

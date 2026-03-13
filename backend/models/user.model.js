@@ -42,7 +42,7 @@ const UserSchema = new mongoose.Schema({
     }],
     orderStatus: [{
         type: String,
-        enum: ['not ordered yet','Pending', 'Shipped', 'Delivered', 'Cancelled'],
+        enum: ['pending', 'packing', 'shipped', 'delivered', 'cancelled'],
         default: 'not ordered yet'
     }],
     orderHistory: [{
