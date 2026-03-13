@@ -11,6 +11,7 @@ const AdminOrdersPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('pending');
     const [statusMessages, setStatusMessages] = useState({});
+    const [cancelState, setCancelState] = useState({}); // { [orderId]: { loading: bool, message: string, error: bool } }
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -123,13 +124,23 @@ const AdminOrdersPage = () => {
         }
     };
     const cancelOrder = async (orderId) => {
+        setCancelState(prev => ({ ...prev, [orderId]: { loading: true, message: null, error: false } }));
         try {
-            const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/admin/cancel-order/${orderId}`)
-            console.log(response.data)
+            await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/admin/cancel-order/${orderId}`);
+            setOrders(prev => prev.filter(o => o._id !== orderId));
+            setCancelState(prev => ({ ...prev, [orderId]: { loading: false, message: 'Order cancelled', error: false } }));
         } catch (error) {
-            console.log(error)
-            console.log("error occured while deleting the order")
+            setCancelState(prev => ({ ...prev, [orderId]: { loading: false, message: 'Failed to cancel order', error: true } }));
         }
+
+        // Clear message after a short delay
+        setTimeout(() => {
+            setCancelState(prev => {
+                const next = { ...prev };
+                delete next[orderId];
+                return next;
+            });
+        }, 3000);
     }
 
     if (loading) {
@@ -289,10 +300,19 @@ const AdminOrdersPage = () => {
                                             Send Message 
                                         </a>
                                     </td>
-                                    <td>
-                                        <button   className="inline-block px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-300" onClick={()=>cancelOrder(order._id)}>
-                                            cancel order
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                        <button
+                                            className="inline-block px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-300 disabled:opacity-60"
+                                            onClick={() => cancelOrder(order._id)}
+                                            disabled={cancelState[order._id]?.loading}
+                                        >
+                                            {cancelState[order._id]?.loading ? 'Cancelling…' : 'Cancel Order'}
                                         </button>
+                                        {cancelState[order._id]?.message && (
+                                            <p className={`text-xs mt-1 ${cancelState[order._id].error ? 'text-red-500' : 'text-green-500'}`}>
+                                                {cancelState[order._id].message}
+                                            </p>
+                                        )}
                                     </td>
                                 </tr>
                             ))
