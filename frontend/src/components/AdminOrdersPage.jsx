@@ -19,9 +19,16 @@ const AdminOrdersPage = () => {
                 const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/analytics/all-orders`);
                 setOrders(response.data.orders);
                 console.log(response.data);
+                setError(null);
                 setLoading(false);
             } catch (err) {
-                setError('Failed to load orders. Please try again later.');
+                // Gracefully handle "no orders" response
+                if (err.response?.status === 404) {
+                    setOrders([]);
+                    setError(null);
+                } else {
+                    setError('Failed to load orders. Please try again later.');
+                }
                 setLoading(false);
                 console.error('Error fetching orders:', err);
             }
@@ -291,8 +298,8 @@ const AdminOrdersPage = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
-                                    No orders found matching your criteria
+                                <td colSpan="9" className="px-6 py-4 text-center text-gray-500">
+                                    There are no orders received yet
                                 </td>
                             </tr>
                         )}
