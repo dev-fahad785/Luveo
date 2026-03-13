@@ -10,7 +10,7 @@ import verifyAdmin from '../middleware/verifyAdmin.js';
 import bcrypt from 'bcrypt'
 
 
-import { addProduct,editProduct,deleteProduct } from '../controller/product.controller.js';
+import { addProduct,editProduct,deleteProduct } from '../controller/admin.product.controller.js';
 
 const router = express();
 cloudinaryConnect();
