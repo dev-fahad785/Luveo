@@ -72,7 +72,6 @@ router.post('/add-user', verifyAdmin, async (req, res) => {
         res.status(500).json({ message: "Error creating user", error: error.message });
     }
 });
-
 router.post('/delete-user/:id', async (req, res) => {
     const userId = req.params.id;
     try {

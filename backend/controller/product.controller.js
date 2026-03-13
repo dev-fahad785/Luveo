@@ -88,37 +88,6 @@ export const addProduct = async (req, res) => {
 	}
 };
 
-export const addProduct2 = async (req, res) => {
-	try {
-		const { name, tagline, price, discountPrice, description, stock, size, SKU, category, tag } = req.body;
-
-		if (!name || !price || !stock) {
-			return res.status(400).json({ message: 'Name, price, and stock are required' });
-		}
-
-		const imageUrls = req.files?.length ? await uploadImgsToCloudinary(req.files) : [];
-
-		const product = new productModel({
-			name,
-			description,
-			price: Number(price),
-			stock: Number(stock),
-			images: imageUrls,
-			size,
-			SKU,
-			category,
-			tag,
-			tagline,
-			discountPrice
-		});
-
-		await product.save();
-		res.status(201).json({ message: 'Product created successfully', product });
-	} catch (error) {
-		res.status(500).json({ message: 'Internal Server Error', error: error.message });
-	}
-};
-
 export const deleteProduct = async (req, res) => {
 	try {
 		const product = await productModel.findByIdAndDelete(req.params.id);
@@ -190,3 +159,5 @@ export const editProduct = async (req, res) => {
 		res.status(500).json({ message: 'Error while updating the product', error: error.message });
 	}
 };
+
+
