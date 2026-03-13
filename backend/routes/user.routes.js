@@ -403,13 +403,6 @@ router.post("/checkout", async (req, res) => {
             );
         }
 
-        // Update revenue with session
-        await Revenue.findOneAndUpdate(
-            {},
-            { $inc: { total: parseFloat(orderTotal) } },
-            { upsert: true, new: true, session }
-        );
-
         // Commit the transaction
         await session.commitTransaction();
 
