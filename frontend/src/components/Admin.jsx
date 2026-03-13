@@ -221,14 +221,14 @@ const Admin = () => {
                             </div>
                         )}
 
-                        <div className="mt-4 md:mt-0 flex space-x-3">
+                        {/* <div className="mt-4 md:mt-0 flex space-x-3">
                             <button className="bg-white shadow-sm px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
                                 <span className="mr-2">📥</span> Export Data
                             </button>
                             <button className="bg-blue-600 px-4 py-2 rounded-lg text-white hover:bg-blue-700 transition-colors">
                                 <span className="mr-2">➕</span> Create New
                             </button>
-                        </div>
+                        </div> */}
                     </div>
 
                     {/* Stats Cards */}
