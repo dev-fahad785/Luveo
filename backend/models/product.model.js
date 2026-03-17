@@ -35,7 +35,8 @@ const ProductSchema = new mongoose.Schema({
     colors: [
         {
             name: { type: String, required: true },
-            hex: { type: String, required: true, match: /^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/ }
+            hex: { type: String, required: true, match: /^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/ },
+            images: [{ type: String }]
         }
     ],
     features: {
@@ -53,10 +54,6 @@ const ProductSchema = new mongoose.Schema({
         weight: { type: String, required: true },
         careInstructions: { type: String, required: true }
     },
-    img: {
-        type: [String],
-        required: true
-    }
 }, { timestamps: true });
 
 const Product = mongoose.model('Product', ProductSchema);
