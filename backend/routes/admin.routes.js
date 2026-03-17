@@ -32,8 +32,8 @@ const uploadImgsToCloudinary = async (files) => {
 };
 
 
-router.post('/add-product', verifyAdmin, upload.array('images', 5), addProduct);
-router.put('/edit-product/:id', verifyAdmin, upload.array('images', 5), editProduct);
+router.post('/add-product', verifyAdmin, upload.any(), addProduct);
+router.put('/edit-product/:id', verifyAdmin, upload.any(), editProduct);
 router.delete('/delete-product/:id', verifyAdmin, deleteProduct);
 
 

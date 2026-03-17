@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { stringify } from "uuid";
 
 const checkoutSchema = new mongoose.Schema({
     userId: {
@@ -16,6 +15,9 @@ const checkoutSchema = new mongoose.Schema({
             type: String,
         },
         productColor: {
+            type: String,
+        },
+        productColorHex: {
             type: String,
         },
 

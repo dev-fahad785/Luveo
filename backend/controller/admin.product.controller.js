@@ -15,6 +15,29 @@ const uploadImgsToCloudinary = async (files) => {
 	return results.map(result => result.secure_url);
 };
 
+// Group req.files by fieldname pattern colorImages_${index}
+const groupFilesByColorIndex = (files) => {
+	const byIndex = {};
+	for (const file of files || []) {
+		const match = file.fieldname.match(/^colorImages_(\d+)$/);
+		if (match) {
+			const idx = parseInt(match[1], 10);
+			if (!byIndex[idx]) byIndex[idx] = [];
+			byIndex[idx].push(file);
+		}
+	}
+	return byIndex;
+};
+
+const validateColors = (colors) => {
+	const hexRegex = /^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
+	for (const color of colors) {
+		if (!color.name || !color.hex) return 'Each color must have both a name and a hex value';
+		if (!hexRegex.test(color.hex)) return `Invalid hex value for color: ${color.name}`;
+	}
+	return null;
+};
+
 export const addProduct = async (req, res) => {
 	try {
 		const productData = JSON.parse(req.body.productData);
@@ -33,24 +56,18 @@ export const addProduct = async (req, res) => {
 			});
 		}
 
+		// Normalize legacy key
 		if (productData.color) {
 			productData.colors = productData.color;
 			delete productData.color;
 		}
 
-		if (productData.colors && Array.isArray(productData.colors)) {
-			const hexRegex = /^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
-			for (const color of productData.colors) {
-				if (!color.name || !color.hex) {
-					return res.status(400).json({ message: 'Each color must have both a name and a hex value' });
-				}
-				if (!hexRegex.test(color.hex)) {
-					return res.status(400).json({ message: `Invalid hex value for color: ${color.name}` });
-				}
-			}
-		} else {
+		if (!productData.colors || !Array.isArray(productData.colors)) {
 			return res.status(400).json({ message: 'Colors must be an array of color objects with name and hex fields' });
 		}
+
+		const colorError = validateColors(productData.colors);
+		if (colorError) return res.status(400).json({ message: colorError });
 
 		if (!Array.isArray(productData.features) || productData.features.length === 0) {
 			return res.status(400).json({ message: 'Features must be a non-empty array of strings' });
@@ -63,8 +80,15 @@ export const addProduct = async (req, res) => {
 			});
 		}
 
-		const imageUrls = req.files?.length ? await uploadImgsToCloudinary(req.files) : [];
-		if (!imageUrls.length) {
+		// Upload images per color
+		const filesByColor = groupFilesByColorIndex(req.files);
+		for (let i = 0; i < productData.colors.length; i++) {
+			const files = filesByColor[i] || [];
+			productData.colors[i].images = files.length ? await uploadImgsToCloudinary(files) : [];
+		}
+
+		const hasAnyImage = productData.colors.some(c => c.images && c.images.length > 0);
+		if (!hasAnyImage) {
 			return res.status(400).json({ message: 'At least one product image is required' });
 		}
 
@@ -73,7 +97,6 @@ export const addProduct = async (req, res) => {
 			price: Number(productData.price),
 			discountPrice: Number(productData.discountPrice),
 			stock: Number(productData.stock),
-			img: imageUrls
 		});
 
 		const savedProduct = await newProduct.save();
@@ -89,6 +112,7 @@ export const addProduct = async (req, res) => {
 };
 
 export const deleteProduct = async (req, res) => {
+	console.log(`Attempting to delete product with ID: ${req.params.id}`);
 	try {
 		const product = await productModel.findByIdAndDelete(req.params.id);
 
@@ -111,41 +135,35 @@ export const editProduct = async (req, res) => {
 			return res.status(400).json({ message: 'Name, price, stock, and description are required fields' });
 		}
 
+		// Normalize legacy key
 		if (productData.color) {
 			productData.colors = productData.color;
 			delete productData.color;
 		}
 
-		if (productData.colors && Array.isArray(productData.colors)) {
-			const hexRegex = /^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
-			for (const color of productData.colors) {
-				if (!color.name || !color.hex) {
-					return res.status(400).json({ message: 'Each color must have both a name and a hex value' });
-				}
-				if (!hexRegex.test(color.hex)) {
-					return res.status(400).json({ message: `Invalid hex value for color: ${color.name}` });
-				}
-			}
-		} else {
+		if (!productData.colors || !Array.isArray(productData.colors)) {
 			return res.status(400).json({ message: 'Colors must be an array of color objects with name and hex fields' });
 		}
 
-		let imageUrls = req.body.images || [];
-		if (req.files && req.files.length > 0) {
-			const uploadedImages = await uploadImgsToCloudinary(req.files);
-			imageUrls = [...imageUrls, ...uploadedImages];
-		}
+		const colorError = validateColors(productData.colors);
+		if (colorError) return res.status(400).json({ message: colorError });
 
-		const existingImages = JSON.parse(req.body.existingImages || '[]');
-		const imagesToRemove = JSON.parse(req.body.imagesToRemove || '[]');
-		imageUrls = existingImages.filter(img => !imagesToRemove.includes(img));
+		// Build images per color from existing + new uploads minus removed
+		const filesByColor = groupFilesByColorIndex(req.files);
+		for (let i = 0; i < productData.colors.length; i++) {
+			const existing = JSON.parse(req.body[`existingColorImages_${i}`] || '[]');
+			const toRemove = JSON.parse(req.body[`colorImagesToRemove_${i}`] || '[]');
+			const kept = existing.filter(url => !toRemove.includes(url));
+
+			const newFiles = filesByColor[i] || [];
+			const uploaded = newFiles.length ? await uploadImgsToCloudinary(newFiles) : [];
+
+			productData.colors[i].images = [...kept, ...uploaded];
+		}
 
 		const updatedProduct = await productModel.findByIdAndUpdate(
 			req.params.id,
-			{
-				...productData,
-				images: imageUrls,
-			},
+			{ ...productData },
 			{ new: true }
 		);
 
@@ -159,5 +177,3 @@ export const editProduct = async (req, res) => {
 		res.status(500).json({ message: 'Error while updating the product', error: error.message });
 	}
 };
-
-
