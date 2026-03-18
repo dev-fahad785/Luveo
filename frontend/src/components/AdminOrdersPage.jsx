@@ -84,6 +84,27 @@ const AdminOrdersPage = () => {
         }
     };
 
+    const formatFieldLabel = (fieldName) => {
+        if (!fieldName) return '';
+        return fieldName
+            .replace(/([A-Z])/g, ' $1')
+            .replace(/_/g, ' ')
+            .replace(/^./, (char) => char.toUpperCase())
+            .trim();
+    };
+
+    const renderFieldValue = (value) => {
+        if (value === null || value === undefined || value === '') return 'N/A';
+        if (Array.isArray(value)) {
+            if (value.length === 0) return '[]';
+            return value.join(', ');
+        }
+        if (typeof value === 'object') {
+            return JSON.stringify(value);
+        }
+        return String(value);
+    };
+
     const handleStatusChange = async (orderId, newStatus) => {
         try {
             const res = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/analytics/update-order-status`, {
@@ -129,7 +150,7 @@ const AdminOrdersPage = () => {
             await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/admin/cancel-order/${orderId}`);
             setOrders(prev => prev.filter(o => o._id !== orderId));
             setCancelState(prev => ({ ...prev, [orderId]: { loading: false, message: 'Order cancelled', error: false } }));
-        } catch (error) {
+        } catch {
             setCancelState(prev => ({ ...prev, [orderId]: { loading: false, message: 'Failed to cancel order', error: true } }));
         }
 
@@ -359,6 +380,11 @@ const AdminOrdersPage = () => {
                                 <h3 className="text-base font-semibold mb-2">Order Details</h3>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 bg-gray-50 p-3 rounded-lg">
                                     <div>
+                                        <p className="text-xs text-gray-500">Order ID</p>
+                                        <p className="font-medium break-all">{selectedOrder._id || 'N/A'}</p>
+                                    </div>
+
+                                    <div>
                                         <p className="text-xs text-gray-500">Order Date</p>
                                         <p className="font-medium">{formatDate(selectedOrder.orderDate)}</p>
                                     </div>
@@ -407,46 +433,92 @@ const AdminOrdersPage = () => {
                                 </div>
                             </div>
 
-                            {/* Order Items - Optimized for print */}
+                            {/* Complete Ordered Product Details */}
                             <div className="mb-4">
                                 <h3 className="text-base font-semibold mb-1">Order Items</h3>
-                                <div className="bg-gray-50 rounded-lg overflow-hidden">
-                                    <table className="min-w-full divide-y divide-gray-200 text-sm">
-                                        <thead className="bg-gray-100">
-                                            <tr>
-                                                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500">Product</th>
-                                                <th className="px-2 py-2 text-right text-xs font-medium text-gray-500">Price</th>
-                                                <th className="px-2 py-2 text-right text-xs font-medium text-gray-500">Qty</th>
-                                                <th className="px-2 py-2 text-right text-xs font-medium text-gray-500">Total</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-200">
-                                            {selectedOrder.orderedProducts?.map((item) => (
-                                                <tr key={item._id}>
-                                                    <td className="px-2 py-2">
-                                                        <div className="text-xs">{item.productName}</div>
-                                                    </td>
-                                                    <td className="px-2 py-2 text-xs text-right">
-                                                        {item.productPrice}
-                                                    </td>
-                                                    <td className="px-2 py-2 text-xs text-right">{item.productQuantity || 1}</td>
-                                                    <td className="px-2 py-2 text-xs font-medium text-right">
-                                                        {item.productPrice * item.productQuantity}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                        <tfoot className="bg-gray-50">
-                                            <tr>
-                                                <td colSpan="3" className="px-2 py-2 text-xs font-medium text-right">
-                                                    Total
-                                                </td>
-                                                <td className="px-2 py-2 text-xs font-bold text-right">
-                                                    {selectedOrder.orderTotal}
-                                                </td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
+                                <div className="space-y-3">
+                                    {selectedOrder.orderedProducts?.length ? (
+                                        selectedOrder.orderedProducts.map((item, index) => {
+                                            const lineTotal = Number(item.productPrice || 0) * Number(item.productQuantity || 1);
+                                            const reservedKeys = new Set([
+                                                '_id',
+                                                'productId',
+                                                'productName',
+                                                'productColor',
+                                                'productColorHex',
+                                                'productQuantity',
+                                                'productPrice',
+                                                'productImg',
+                                            ]);
+
+                                            const extraFields = Object.entries(item || {}).filter(([key]) => !reservedKeys.has(key));
+
+                                            return (
+                                                <div key={item._id || `${item.productId}-${index}`} className="bg-gray-50 border rounded-lg p-3">
+                                                    <div className="flex items-center justify-between gap-3 mb-2">
+                                                        <h4 className="font-semibold text-sm text-gray-800">Item #{index + 1}: {item.productName || 'Unnamed Product'}</h4>
+                                                        <span className="text-xs text-gray-500">Line Total: {lineTotal}</span>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
+                                                        <div>
+                                                            <p className="text-gray-500">Item ID</p>
+                                                            <p className="font-medium break-all">{item._id || 'N/A'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-gray-500">Product ID</p>
+                                                            <p className="font-medium break-all">{item.productId || 'N/A'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-gray-500">Price</p>
+                                                            <p className="font-medium">{item.productPrice ?? 'N/A'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-gray-500">Quantity</p>
+                                                            <p className="font-medium">{item.productQuantity ?? 'N/A'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-gray-500">Color</p>
+                                                            <p className="font-medium">{item.productColor || 'N/A'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-gray-500">Color</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-medium">{item.productColor|| 'N/A'}</span>
+                                                                {item.productColorHex && (
+                                                                    <span
+                                                                        className="w-4 h-4 rounded border border-gray-300"
+                                                                        style={{ backgroundColor: item.productColorHex }}
+                                                                        title={item.productColorHex}
+                                                                    />
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {extraFields.length > 0 && (
+                                                        <div className="mt-3">
+                                                            <p className="text-xs text-gray-500 mb-1">Additional Saved Fields</p>
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                                                {extraFields.map(([key, value]) => (
+                                                                    <div key={key} className="bg-white border border-gray-200 rounded px-2 py-1">
+                                                                        <p className="text-gray-500">{formatFieldLabel(key)}</p>
+                                                                        <p className="font-medium break-words">{renderFieldValue(value)}</p>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <p className="text-sm text-gray-500 bg-gray-50 border rounded-lg p-3">No ordered products found for this order.</p>
+                                    )}
+
+                                    <div className="bg-gray-50 border rounded-lg p-3 flex justify-end text-sm font-semibold">
+                                        <span>Total Order Amount: {selectedOrder.orderTotal}</span>
+                                    </div>
                                 </div>
                             </div>
 
