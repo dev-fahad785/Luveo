@@ -1,7 +1,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Added missing import
+import { useNavigate } from 'react-router-dom';
+import { clearColorSelections } from '../store/cartSlice';
 
 // Create separate validation utility
 const validateForm = (data) => {
@@ -32,6 +34,8 @@ const validateForm = (data) => {
 
 const PaymentInfoCard = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const colorSelections = useSelector(state => state.cart.colorSelections);
     const [userData, setUserData] = useState(null);
     const [cartProducts, setCartProducts] = useState([]);
     const [userId, setUserId] = useState(null);
@@ -316,14 +320,21 @@ const PaymentInfoCard = () => {
             const orderData = {
                 ...formData,
                 userId,
-                orderedProducts: cartProducts.map(p => ({
-                    productId: p._id,
-                    productName: p.name,
-                    productColor: p.color || p.colors[0].name,
-                    productQuantity: p.quantity || 1,
-                    productPrice: p.discountPrice,
-                    productImg: p.img,
-                })),
+                orderedProducts: cartProducts.map(p => {
+                    const sel = colorSelections[p._id];
+                    const color = sel
+                        ? p.colors?.find(c => c.hex === sel.hex)
+                        : p.colors?.[0];
+                    return {
+                        productId: p._id,
+                        productName: p.name,
+                        productColor: color?.name || '',
+                        productColorHex: color?.hex || '',
+                        productQuantity: p.quantity || 1,
+                        productPrice: p.discountPrice,
+                        productImg: color?.images || [],
+                    };
+                }),
                 orderTotal,
                 orderDate: new Date().toISOString()
             };
@@ -338,6 +349,7 @@ const PaymentInfoCard = () => {
 
             if (response.data && response.data.success) {
                 setSubmitSuccess(true);
+                dispatch(clearColorSelections());
                 // Clear cart after successful order
                 localStorage.setItem('user', JSON.stringify({
                     ...JSON.parse(localStorage.getItem('user')),
@@ -446,7 +458,15 @@ const PaymentInfoCard = () => {
                                     <p className="text-sm text-gray-600">{cartProducts.length} item(s) in cart</p>
                                     {cartProducts.map((product, index) => (
                                         <div key={index} className="flex items-center space-x-2">
-                                            <img src={product.img[0]} alt={product.name} className="w-12 h-12 object-cover" />
+                                            <img src={
+                                                (() => {
+                                                    const sel = colorSelections[product._id];
+                                                    const color = sel
+                                                        ? product.colors?.find(c => c.hex === sel.hex)
+                                                        : product.colors?.[0];
+                                                    return color?.images?.[0] || '';
+                                                })()
+                                            } alt={product.name} className="w-12 h-12 object-cover" />
                                             <p className="text-sm text-gray-600">
                                                 {product.name} - {product.quantity || 1}
                                             </p>
