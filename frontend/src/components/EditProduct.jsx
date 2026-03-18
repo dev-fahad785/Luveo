@@ -14,6 +14,18 @@ const EditProduct = () => {
     });
     const [images, setImages] = useState([]);
 
+    const getAuthToken = () => {
+        const directToken = localStorage.getItem('token');
+        if (directToken) return directToken.replace(/^Bearer\s+/i, '');
+
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            return (user?.token || '').replace(/^Bearer\s+/i, '');
+        } catch {
+            return '';
+        }
+    };
+
     useEffect(() => {
         const fetchProduct = async () => {
             try {
@@ -31,7 +43,7 @@ const EditProduct = () => {
                         tag: data.product.tag,
                         size: data.product.size,
                     });
-                    setImages(data.product.images || []);
+                    setImages(data.product.colors?.[0]?.images || []);
                 }
             } catch (error) {
                 console.error("Error fetching product:", error);
@@ -51,7 +63,6 @@ const EditProduct = () => {
 
     const handleFileChange = (event) => {
         const files = Array.from(event.target.files);
-        const previews = files.map(file => URL.createObjectURL(file));
         setSelectedFiles(prev => [...prev, ...files]);
     };
 
@@ -66,24 +77,31 @@ const EditProduct = () => {
     const handleUpdateProduct = async () => {
         setLoading(true);
         const formData = new FormData();
-        // Add editable fields
-        Object.entries(editableFields).forEach(([key, value]) => formData.append(key, value));
 
-        // Combine the old images with new images
-        images.forEach(image => formData.append('images', image)); // Add old images first
-        selectedFiles.forEach(file => formData.append('images', file)); // Add new images
+        const productData = {
+            ...product,
+            ...editableFields,
+            price: Number(editableFields.price) || 0,
+            stock: Number(editableFields.stock) || 0,
+            discountPrice: Number(product.discountPrice) || 0,
+            technicalSpecs: product.technicalSpecs || {},
+            features: Array.isArray(product.features) ? product.features : [],
+            colors: (product.colors || []).map((color) => ({
+                name: color.name,
+                hex: color.hex,
+            })),
+        };
+
+        formData.append('productData', JSON.stringify(productData));
+        formData.append('existingColorImages_0', JSON.stringify(images));
+        selectedFiles.forEach(file => formData.append('colorImages_0', file));
 
         try {
-
-            const token = JSON.parse(localStorage.getItem("user"))?.token; // Extract token safely
-            console.log(token)
+            const token = getAuthToken();
             if (!token) {
-                console.error("🚨 No token found in localStorage!");
-                toast.error("Authentication failed. Please log in again.");
+                console.error("No token found in localStorage");
                 return;
             }
-
-            console.log("🛠️ Token being sent:", token); // Debugging
 
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/admin/edit-product/${id}`, {
                 method: 'PUT',
@@ -98,10 +116,11 @@ const EditProduct = () => {
                 alert('Product updated successfully');
                 const updatedProduct = await response.json();
                 setProduct(updatedProduct.product);
-                setImages(updatedProduct.product.images);
+                setImages(updatedProduct.product.colors?.[0]?.images || []);
                 setSelectedFiles([]);
             } else {
-                alert('Failed to update product');
+                const errorPayload = await response.json().catch(() => ({}));
+                alert(errorPayload?.message || 'Failed to update product');
             }
         } catch (error) {
             console.error('Error updating product:', error);
