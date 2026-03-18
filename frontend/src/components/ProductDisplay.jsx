@@ -1,31 +1,34 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import axios from "axios";
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaShoppingCart, FaExpand, FaCheck, FaAngleUp, FaAngleDown } from 'react-icons/fa';
 
 import Reviews from "./random/Reviews";
 import AlertMessage from "./Alert";
+import { setColorSelection } from "../store/cartSlice";
 
 const ProductDisplay = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const [product, setProduct] = useState(null);
     const [selectedColor, setSelectedColor] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [isFullScreenImage, setIsFullScreenImage] = useState(false);
-    
+
     // Status states
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userId, setUserId] = useState(null);
     const [isAddingToCart, setIsAddingToCart] = useState(false);
     const [isBuyingNow, setIsBuyingNow] = useState(false);
-    
+
     // Image gallery state
-    const [selectedImageIndex, setSelectedImageIndex] = useState(0); 
-    
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
     // Alert state
     const [alertProps, setAlertProps] = useState({ message: "", type: "success", visible: false });
 
@@ -58,6 +61,11 @@ const ProductDisplay = () => {
 
     useEffect(() => { if (id) getProduct(); }, [id, getProduct]);
 
+    // Reset image index when color changes
+    useEffect(() => {
+        setSelectedImageIndex(0);
+    }, [selectedColor]);
+
     // Helpers
     const showNotification = (message, type = "success") => setAlertProps({ message, type, visible: true });
     const handleCloseAlert = () => setAlertProps(prev => ({ ...prev, visible: false }));
@@ -87,6 +95,16 @@ const ProductDisplay = () => {
         try {
             const ensuredUserId = await ensureUserId();
             await axios.post(`${import.meta.env.VITE_BACKEND_URL}/product/add-to-cart`, { productId, userId: ensuredUserId });
+
+            // Store the selected color in Redux so checkout can read it
+            const selectedColorObj = product.colors?.find(c => c.hex === selectedColor);
+            if (selectedColorObj) {
+                dispatch(setColorSelection({
+                    productId,
+                    color: { name: selectedColorObj.name, hex: selectedColorObj.hex }
+                }));
+            }
+
             showNotification(
                 buyNow ? "Product purchased successfully! Redirecting..." : "Added to cart successfully!",
                 "success"
@@ -99,12 +117,15 @@ const ProductDisplay = () => {
         }
     };
 
+    // Images of the currently selected color
+    const currentImages = product?.colors?.find(c => c.hex === selectedColor)?.images || [];
+
     const handlePrevImage = () => {
-       setSelectedImageIndex(prev => prev > 0 ? prev - 1 : product.img.length - 1);
+       setSelectedImageIndex(prev => prev > 0 ? prev - 1 : currentImages.length - 1);
     };
 
     const handleNextImage = () => {
-       setSelectedImageIndex(prev => prev < product.img.length - 1 ? prev + 1 : 0);
+       setSelectedImageIndex(prev => prev < currentImages.length - 1 ? prev + 1 : 0);
     };
 
     if (loading) return <div className="min-h-screen flex items-center justify-center p-8"><div className="w-12 h-12 border-2 border-t-black border-gray-200 rounded-full animate-spin"></div></div>;
@@ -133,8 +154,8 @@ const ProductDisplay = () => {
                         </button>
 
                         <div className="flex flex-col gap-2.5 flex-1 overflow-y-auto hide-scrollbar">
-                           {product.img.map((img, idx) => (
-                               <button 
+                           {currentImages.map((img, idx) => (
+                               <button
                                   key={idx}
                                   onClick={() => setSelectedImageIndex(idx)}
                                   className={`w-full aspect-square bg-white p-2 rounded-md transition border ${selectedImageIndex === idx ? "border-[#0f0f0f]" : "border-[#e5e5e5] hover:border-gray-400"}`}
@@ -153,12 +174,12 @@ const ProductDisplay = () => {
                     <div className="flex-1 bg-white rounded-2xl relative overflow-hidden flex items-center justify-center p-10 border border-black/5">
                         <AnimatePresence mode="wait">
                             <motion.img
-                                key={selectedImageIndex}
+                                key={`${selectedColor}-${selectedImageIndex}`}
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
                                 transition={{ duration: 0.3 }}
-                                src={product.img[selectedImageIndex]}
+                                src={currentImages[selectedImageIndex]}
                                 alt={product.name}
                                 className="w-full h-full object-contain max-h-[75vh]"
                             />
@@ -254,7 +275,7 @@ const ProductDisplay = () => {
                             >
                                 {isAddingToCart ? "Adding..." : "Add To Cart"}
                             </button>
-                            
+
                             <button
                                 onClick={() => addToCart(product._id, true)}
                                 disabled={isAddingToCart || isBuyingNow || product.stock <= 0}
@@ -263,12 +284,12 @@ const ProductDisplay = () => {
                                 {isBuyingNow ? "Processing..." : "Buy It Now"}
                             </button>
                         </div>
-                        
+
                         {/* Features / Pitch */}
                         <p className="font-sans text-sm text-[#0f0f0f] leading-6 mb-6">
                             The simplicity paradox — do less, deliver more. {product.tagline} Perfects the user flow and integrates seamlessly into your daily carry.
                         </p>
-                        
+
                         <a href="#product-details" className="font-sans text-sm text-[#0f0f0f] underline font-semibold">
                             Show More
                         </a>
@@ -280,14 +301,14 @@ const ProductDisplay = () => {
 
             {/* Bottom Content Area */}
             <div className="max-w-[1080px] mx-auto px-[clamp(20px,4vw,40px)]">
-                
+
                 {/* Product Overview & Specs Accordion style */}
                 <div className="bg-white rounded-2xl p-10 mb-14 border border-[#e5e5e5]">
                      <h2 className="font-serif text-[1.8rem] font-bold mb-6 text-[#0f0f0f]">Features & Specs</h2>
                      <p className="font-sans text-base leading-7 text-[#7a7a7a] mb-8">
                          {product.description}
                      </p>
-                     
+
                      {product.technicalSpecs && Object.keys(product.technicalSpecs).length > 0 && (
                          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 border-t border-[#e5e5e5] pt-8">
                              {Object.entries(product.technicalSpecs).map(([key, value]) => (
@@ -318,7 +339,7 @@ const ProductDisplay = () => {
                         ×
                     </button>
                     <img
-                        src={product.img[selectedImageIndex]}
+                        src={currentImages[selectedImageIndex]}
                         alt={product.name}
                         className="max-w-full max-h-full object-contain"
                     />
