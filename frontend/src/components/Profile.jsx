@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import { FaShoppingCart, FaTrash, FaSpinner, FaUser, FaHistory, FaBox, FaSignOutAlt, FaStore } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -15,6 +16,7 @@ const UserProfile = () => {
     const [activeTab, setActiveTab] = useState("cart"); // "cart", "orders"
 
     const navigate = useNavigate();
+    const colorSelections = useSelector(state => state.cart.colorSelections);
 
     // Calculate cart total
     const cartTotal = useMemo(() => {
@@ -213,17 +215,33 @@ const UserProfile = () => {
             {cartProducts.length > 0 ? (
                 <>
                     <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {cartProducts.map((product) => (
+                        {cartProducts.map((product) => {
+                            const selectedColor = colorSelections[product._id];
+                            const colorImages = selectedColor
+                                ? product.colors?.find(c => c.hex === selectedColor.hex)?.images
+                                : product.colors?.[0]?.images;
+                            const displayImage = colorImages?.[0] || "https://www.dewnor.com/wp-content/uploads/2021/01/cropped-cropped-logo.png";
+                            const displayColor = selectedColor || (product.colors?.[0] ? { name: product.colors[0].name, hex: product.colors[0].hex } : null);
+                            return (
                             <div key={product._id} className="border rounded-xl shadow-md bg-white hover:shadow-lg transition-shadow overflow-hidden group">
                                 <div className="h-48 overflow-hidden relative">
                                     <img
-                                        src={product.img?.[0] || "https://www.dewnor.com/wp-content/uploads/2021/01/cropped-cropped-logo.png"}
+                                        src={displayImage}
                                         alt={product.name}
                                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                     />
                                 </div>
                                 <div className="p-4">
                                     <h3 className="text-base font-semibold text-gray-900 line-clamp-2 h-12">{product.name}</h3>
+                                    {displayColor && (
+                                        <div className="flex items-center gap-2 mt-1 mb-1">
+                                            <span
+                                                className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0"
+                                                style={{ background: displayColor.hex }}
+                                            />
+                                            <span className="text-sm text-gray-600">{displayColor.name}</span>
+                                        </div>
+                                    )}
                                     <span className="text-green-600 font-bold text-lg block mt-2">{product.discountPrice}</span>
                                     <button
                                         onClick={() => removeFromCart(product._id)}
@@ -233,7 +251,8 @@ const UserProfile = () => {
                                     </button>
                                 </div>
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     <div className="mt-8 border-t pt-6">

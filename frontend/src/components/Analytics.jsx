@@ -147,7 +147,7 @@ const Analytics = () => {
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0 h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shadow-inner">
                                                 <img
-                                                    src={topProduct.img?.[0] || "/api/placeholder/64/64"}
+                                                    src={topProduct.colors?.[0]?.images?.[0] || "/api/placeholder/64/64"}
                                                     alt={topProduct.name}
                                                     className="h-full w-full object-cover"
                                                 />
@@ -241,7 +241,7 @@ const Analytics = () => {
                                                             <div className="flex-shrink-0 h-10 w-10">
                                                                 <img
                                                                     className="h-10 w-10 rounded-full object-cover"
-                                                                    src={product.img?.[0] || "/api/placeholder/40/40"}
+                                                                    src={product.colors?.[0]?.images?.[0] || "/api/placeholder/40/40"}
                                                                     alt={product.name}
                                                                 />
                                                             </div>

@@ -61,8 +61,8 @@ const ProductCard = ({ product, loading }) => {
     }
   };
 
-  const primaryImage = product?.img?.[0];
-  const secondaryImage = product?.img?.[1];
+  const primaryImage = product?.colors?.[0]?.images?.[0];
+  const secondaryImage = product?.colors?.[0]?.images?.[1];
 
   if (loading) return <SkeletonCard />;
 
