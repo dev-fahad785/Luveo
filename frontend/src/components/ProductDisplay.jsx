@@ -61,6 +61,11 @@ const ProductDisplay = () => {
 
     useEffect(() => { if (id) getProduct(); }, [id, getProduct]);
 
+    // Scroll to top when product loads
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [id]);
+
     // Reset image index when color changes
     useEffect(() => {
         setSelectedImageIndex(0);
@@ -145,7 +150,7 @@ const ProductDisplay = () => {
             <div className="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-[1.3fr_1fr] gap-[clamp(40px,6vw,100px)] px-[clamp(20px,4vw,60px)] py-10 items-start">
 
                 {/* ── Left Column: Media Gallery ── */}
-                <div className="flex gap-6 h-[calc(100vh-120px)] sticky top-24">
+                <div className="flex gap-6 h-[calc(100vh-120px)] sticky top-32 md:top-40">
 
                     {/* Vertical Thumbnails */}
                     <div className="flex flex-col gap-3 w-20 flex-shrink-0">
