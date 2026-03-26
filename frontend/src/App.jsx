@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Route, Routes, Navigate } from 'react-router-dom'
+import { SuccessPayment, CancelPayment } from './components/Success';
 import axios from 'axios'
 import Home from './Home'
 import Signup from './components/Signup'
@@ -11,7 +12,6 @@ import User from './components/User'
 import Profile from './components/Profile'
 import EditProduct from './components/EditProduct'
 import AllProducts from './components/AllProducts'
-import { SuccessPayment, CancelPayment } from './components/Success';
 import AdminOrdersPage from './components/AdminOrdersPage'
 import ProtectedRoute from './components/ProtectedRoute';
 import Checkout from './components/Checkout'
