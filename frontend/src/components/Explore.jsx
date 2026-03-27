@@ -2,8 +2,12 @@ import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 const categories = [
-  { id: 1, category: "Women's Bags", value:'women-bags',     image: "https://images.pexels.com/photos/23223837/pexels-photo-23223837.jpeg?_gl=1*su7qjh*_ga*MTEyMzM2ODEyNy4xNzcxNjY5OTAy*_ga_8JE65Q40S6*czE3NzE2Njk5MDIkbzEkZzEkdDE3NzE2NzA5NDQkajQzJGwwJGgw"        },
+  { id: 1, category: "Magnet wallet", value:'magnetic-wallet',     image: "https://www.waldorleather.com/cdn/shop/collections/E0127C8F-00FD-4D9A-B501-9DBC77D98CAC.jpg?v=1769830638&width=535"        },
+  { id: 1, category: "Long Wallet", value:'long-wallet',     image: "https://www.waldorleather.com/cdn/shop/collections/Untitled_design-59.png?v=1770982930&width=535"        },
   { id: 2, category: "Men's Wallets", value:'men-wallets', image: "https://images.unsplash.com/photo-1606503825008-909a67e63c3d?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"    },
+  { id: 2, category: "Men's Wallets", value:'men-wallets', image: "https://images.unsplash.com/photo-1606503825008-909a67e63c3d?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"    },
+  { id: 2, category: "Men's Wallets", value:'men-wallets', image: "https://images.unsplash.com/photo-1606503825008-909a67e63c3d?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"    },
+  { id: 1, category: "Women's Bags", value:'women-bags',     image: "https://images.pexels.com/photos/23223837/pexels-photo-23223837.jpeg?_gl=1*su7qjh*_ga*MTEyMzM2ODEyNy4xNzcxNjY5OTAy*_ga_8JE65Q40S6*czE3NzE2Njk5MDIkbzEkZzEkdDE3NzE2NzA5NDQkajQzJGwwJGgw"        },
   { id: 3, category: "Leather Belts", value:'leather-belts',   image: "https://images.unsplash.com/photo-1664286074176-5206ee5dc878?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"     },
   { id: 4, category: "Accessories", value:'accessories',  image: "https://images.unsplash.com/photo-1535683577427-740aaac4ec25?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"   },
 ];
