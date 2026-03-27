@@ -33,7 +33,7 @@ const Explore = () => {
 
   return (
     <section className="bg-[#f7f7f7] pb-20 px-[clamp(20px,5vw,80px)]">
-      <div className="max-w-[1440px] mx-auto grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-[clamp(16px,3vw,32px)]">
+      <div className="max-w-[1440px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-[clamp(16px,3vw,32px)]">
         {categories.map((item, idx) => (
           <CategoryPanel
             key={item.id}
