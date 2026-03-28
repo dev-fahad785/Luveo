@@ -248,7 +248,7 @@ const AllProducts = () => {
     // Set the selectedCategory when the URL parameter changes
     useEffect(() => {
         if (category) {
-            setSelectedCategory(category);
+            setSelectedCategory(category.toLowerCase());
         } else {
             setSelectedCategory("");
         }
@@ -272,11 +272,12 @@ const AllProducts = () => {
             const data = await response.json();
             console.log(data)
 
-            setProducts(data.products);
+            const fetchedProducts = data.products || [];
+            setProducts(fetchedProducts);
 
             // Extract unique categories from all products
             const uniqueCategories = [...new Set(
-                products
+                fetchedProducts
                     .map(product => product.category)
                     .filter(Boolean)
             )];
@@ -311,7 +312,10 @@ const AllProducts = () => {
         // Note: Your backend filters by tag, but frontend displays categories
         // So we need to keep this filter for consistency
         if (selectedCategory && !category) {
-            result = result.filter(product => product.category === selectedCategory);
+            const normalizedSelectedCategory = selectedCategory.toLowerCase();
+            result = result.filter(
+                product => String(product.category || '').toLowerCase() === normalizedSelectedCategory
+            );
         }
 
         // Apply sorting
