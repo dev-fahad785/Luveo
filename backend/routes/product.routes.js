@@ -2,6 +2,11 @@ import express from 'express';
 import productModel from '../models/product.model.js';
 import userModel from '../models/user.model.js'
 import mongoose from 'mongoose';
+import {
+    PRODUCT_CATEGORIES,
+    isValidProductCategory,
+    normalizeCategory,
+} from '../constants/productCategories.js';
 
 
 
@@ -104,16 +109,16 @@ app.post('/remove-from-cart', async (req, res) => {
 })
 app.get('/categories/:category', async (req, res) => {
     try {
-        const { category } = req.params;
-        console.log("Category received:", category); // Debugging log
+        const category = normalizeCategory(req.params.category);
 
-        // Correcting the query to match category field
+        if (!isValidProductCategory(category)) {
+            return res.status(400).json({
+                message: `Category must be one of: ${PRODUCT_CATEGORIES.join(', ')}`,
+            });
+        }
+
         const products = await productModel.find({ category });
 
-        // Debugging
-        console.log("Data type of category:", typeof category);
-
-        // Checking if products exist
         if (!products || products.length === 0) {
             return res.status(404).json({ message: `No products found in ${category} category` });
         }
