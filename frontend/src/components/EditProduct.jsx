@@ -1,8 +1,7 @@
-
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { PRODUCT_CATEGORY_OPTIONS } from '../lib/productCategories';
 import { useParams } from 'react-router-dom';
 import AdminBackLink from './AdminBackLink';
-import { PRODUCT_CATEGORY_OPTIONS } from '../lib/productCategories';
 
 const EditProduct = () => {
     const { id } = useParams();
@@ -139,7 +138,7 @@ const EditProduct = () => {
             <h2 className="text-lg font-bold mb-4">Edit Product</h2>
 
             {Object.entries(editableFields).map(([key, value]) => (
-                <div className="mb-4">
+                <div key={key} className="mb-4">
                     <label className="block text-gray-700 font-medium mb-1">
                         {key.charAt(0).toUpperCase() + key.slice(1)}
                     </label>
