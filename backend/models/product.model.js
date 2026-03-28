@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import { PRODUCT_CATEGORIES } from '../constants/productCategories.js';
+
 const ProductSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -17,7 +19,7 @@ const ProductSchema = new mongoose.Schema({
     category: {
         type: String,
         required: true,
-        enum: ['women-bags', 'men-wallets','leather-belts',  'accessories'],
+        enum: PRODUCT_CATEGORIES,
         trim: true
     },
     price: {
