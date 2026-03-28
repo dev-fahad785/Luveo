@@ -15,9 +15,6 @@ import { addProduct,editProduct,deleteProduct } from '../controller/admin.produc
 const router = express();
 cloudinaryConnect();
 
-// Allowed leather categories for validation
-const allowedCategories = ['bags', 'wallets', 'belts', 'accessories'];
-
 // Helper function to upload images to Cloudinary
 const uploadImgsToCloudinary = async (files) => {
     try {
