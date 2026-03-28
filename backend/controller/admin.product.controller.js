@@ -1,11 +1,14 @@
 import cloudinary, { cloudinaryConnect } from '../config/cloudinary.js';
 import productModel from '../models/product.model.js';
+import {
+	PRODUCT_CATEGORIES,
+	isValidProductCategory,
+	normalizeCategory,
+} from '../constants/productCategories.js';
 
 // Ensure Cloudinary is ready for uploads
 cloudinaryConnect();
 
-// Allowed leather categories for validation
-const allowedCategories = ['women-bags', 'men-wallets','leather-belts',  'accessories'];
 const requiredSpecs = ['material', 'dimensions', 'weight', 'careInstructions'];
 
 // Upload an array of files to Cloudinary and return their URLs
@@ -50,9 +53,11 @@ export const addProduct = async (req, res) => {
 			});
 		}
 
-		if (!allowedCategories.includes(productData.category)) {
+		productData.category = normalizeCategory(productData.category);
+
+		if (!isValidProductCategory(productData.category)) {
 			return res.status(400).json({
-				message: `Category must be one of: ${allowedCategories.join(', ')}`
+				message: `Category must be one of: ${PRODUCT_CATEGORIES.join(', ')}`
 			});
 		}
 
@@ -133,6 +138,14 @@ export const editProduct = async (req, res) => {
 		if (!productData.name || !productData.price || !productData.description ||
 			!productData.stock || !productData.category) {
 			return res.status(400).json({ message: 'Name, price, stock, and description are required fields' });
+		}
+
+		productData.category = normalizeCategory(productData.category);
+
+		if (!isValidProductCategory(productData.category)) {
+			return res.status(400).json({
+				message: `Category must be one of: ${PRODUCT_CATEGORIES.join(', ')}`
+			});
 		}
 
 		// Normalize legacy key

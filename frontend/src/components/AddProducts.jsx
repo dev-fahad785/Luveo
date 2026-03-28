@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify'; // Assuming you're using react-toastify for notifications
 import axios from 'axios';
 import AdminBackLink from './AdminBackLink';
+import { PRODUCT_CATEGORY_OPTIONS } from '../lib/productCategories';
 
 const ProductManagement = () => {
     // State for product list and loading
@@ -282,7 +283,7 @@ const ProductManagement = () => {
                 description: formData.description,
                 price: Number(formData.price),
                 stock: Number(formData.stock),
-                category: formData.category,
+                category: formData.category.trim().toLowerCase(),
                 tagline: formData.tagline || '',
                 discountPrice: Number(formData.discountPrice) || 0,
                 technicalSpecs: formData.technicalSpecs || {},
@@ -529,10 +530,11 @@ const ProductManagement = () => {
                                 required
                             >
                                 <option value="">Select a category</option>
-                                <option value="women-bags">Womens Bags</option>
-                                <option value="men-wallets">Mens Wallets</option>
-                                <option value="leather-belts">Leather Belts</option>
-                                <option value="accessories">Accessories</option>
+                                {PRODUCT_CATEGORY_OPTIONS.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>
