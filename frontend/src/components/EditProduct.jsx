@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import AdminBackLink from './AdminBackLink';
+import { PRODUCT_CATEGORY_OPTIONS } from '../lib/productCategories';
 
 const EditProduct = () => {
     const { id } = useParams();
@@ -38,7 +39,7 @@ const EditProduct = () => {
                         price: data.product.price,
                         description: data.product.description,
                         stock: data.product.stock,
-                        category: data.product.category,
+                        category: String(data.product.category || '').toLowerCase(),
                         SKU: data.product.SKU,
                         tag: data.product.tag,
                         size: data.product.size,
@@ -83,6 +84,7 @@ const EditProduct = () => {
             ...editableFields,
             price: Number(editableFields.price) || 0,
             stock: Number(editableFields.stock) || 0,
+            category: String(editableFields.category || '').trim().toLowerCase(),
             discountPrice: Number(product.discountPrice) || 0,
             technicalSpecs: product.technicalSpecs || {},
             features: Array.isArray(product.features) ? product.features : [],
@@ -141,15 +143,32 @@ const EditProduct = () => {
                     <label className="block text-gray-700 font-medium mb-1">
                         {key.charAt(0).toUpperCase() + key.slice(1)}
                     </label>
-                    <input
-                        key={key}
-                        type="text"
-                        name={key}
-                        value={value}
-                        onChange={(e) => handleEdit(key, e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        placeholder={`Edit ${key}`}
-                    />
+                    {key === 'category' ? (
+                        <select
+                            key={key}
+                            name={key}
+                            value={value}
+                            onChange={(e) => handleEdit(key, e.target.value)}
+                            className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        >
+                            <option value="">Select category</option>
+                            {PRODUCT_CATEGORY_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
+                    ) : (
+                        <input
+                            key={key}
+                            type="text"
+                            name={key}
+                            value={value}
+                            onChange={(e) => handleEdit(key, e.target.value)}
+                            className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            placeholder={`Edit ${key}`}
+                        />
+                    )}
                 </div>
 
             ))}
