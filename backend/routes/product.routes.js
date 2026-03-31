@@ -18,11 +18,30 @@ app.get('/test', (req, res) => {
     res.send("the test route from index.js")
 })
 app.get('/get-products', async (req, res) => {
-    const products = await productModel.find({})
-    if (!products || products == 0) {
-        return res.status(404).json({ message: "no product found" })
+    try {
+        const { featured, limit } = req.query;
+        const query = {};
+
+        if (typeof featured !== 'undefined') {
+            query.featured = String(featured).toLowerCase() === 'true';
+        }
+
+        let productsQuery = productModel.find(query).sort({ createdAt: -1 });
+
+        const parsedLimit = Number.parseInt(limit, 10);
+        if (Number.isInteger(parsedLimit) && parsedLimit > 0) {
+            productsQuery = productsQuery.limit(parsedLimit);
+        }
+
+        const products = await productsQuery;
+        if (!products || products.length === 0) {
+            return res.status(404).json({ message: 'no product found' });
+        }
+
+        res.status(200).json({ message: 'product found successfully,', products });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-    res.status(200).json({ message: "product found successfully,", products: products })
 })
 app.get('/get-product/:id', async (req, res) => {
     try {
