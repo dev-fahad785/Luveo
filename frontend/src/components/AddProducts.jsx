@@ -16,6 +16,7 @@ const ProductManagement = () => {
         price: '',
         discountPrice: '',
         stock: '',
+        featured: false,
         category: '',
         description: '',
         technicalSpecs: {
@@ -87,6 +88,7 @@ const ProductManagement = () => {
             price: '',
             discountPrice: '',
             stock: '',
+            featured: false,
             category: '',
             description: '',
             technicalSpecs: {
@@ -112,6 +114,7 @@ const ProductManagement = () => {
             price: product.price || '',
             discountPrice: product.discountPrice || '',
             stock: product.stock || '',
+            featured: Boolean(product.featured),
             category: product.category || '',
             description: product.description || '',
             technicalSpecs: product.technicalSpecs || {
@@ -150,7 +153,7 @@ const ProductManagement = () => {
 
     // Handle form field changes
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type, checked } = e.target;
 
         if (name.includes('.')) {
             const [parent, child] = name.split('.');
@@ -164,7 +167,7 @@ const ProductManagement = () => {
         } else {
             setFormData(prev => ({
                 ...prev,
-                [name]: value
+                [name]: type === 'checkbox' ? checked : value
             }));
         }
     };
@@ -286,6 +289,7 @@ const ProductManagement = () => {
                 category: formData.category.trim().toLowerCase(),
                 tagline: formData.tagline || '',
                 discountPrice: Number(formData.discountPrice) || 0,
+                featured: Boolean(formData.featured),
                 technicalSpecs: formData.technicalSpecs || {},
                 colors: formData.colors.map(color => ({
                     name: color.name,
@@ -536,6 +540,20 @@ const ProductManagement = () => {
                                     </option>
                                 ))}
                             </select>
+                        </div>
+
+                        <div className="flex items-center gap-3 mt-6">
+                            <input
+                                id="featured"
+                                type="checkbox"
+                                name="featured"
+                                checked={formData.featured}
+                                onChange={handleChange}
+                                className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                            />
+                            <label htmlFor="featured" className="text-sm font-medium text-gray-700">
+                                Show on home page (featured)
+                            </label>
                         </div>
                     </div>
 
@@ -814,6 +832,9 @@ const ProductManagement = () => {
                                 <div className="p-4">
                                     <h1 className="text-lg font-semibold text-gray-800">{product.name}</h1>
                                     <p className="text-sm text-gray-500 mb-2">{product.category}</p>
+                                    <p className="text-xs font-medium mb-2 text-indigo-600">
+                                        {product.featured ? 'Featured' : 'Not featured'}
+                                    </p>
                                     <p className="text-sm font-medium text-gray-900 mb-4">${product.price}</p>
                                     <div className="flex justify-between">
                                         <button
