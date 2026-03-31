@@ -45,6 +45,8 @@ export const addProduct = async (req, res) => {
 	try {
 		const productData = JSON.parse(req.body.productData);
 
+		productData.featured = Boolean(productData.featured);
+
 		if (!productData.name || !productData.price || !productData.description ||
 			!productData.stock || !productData.category || !productData.tagline ||
 			!productData.discountPrice) {
@@ -102,6 +104,7 @@ export const addProduct = async (req, res) => {
 			price: Number(productData.price),
 			discountPrice: Number(productData.discountPrice),
 			stock: Number(productData.stock),
+			featured: Boolean(productData.featured),
 		});
 
 		const savedProduct = await newProduct.save();
@@ -134,6 +137,8 @@ export const deleteProduct = async (req, res) => {
 export const editProduct = async (req, res) => {
 	try {
 		const productData = JSON.parse(req.body.productData);
+
+		productData.featured = Boolean(productData.featured);
 
 		if (!productData.name || !productData.price || !productData.description ||
 			!productData.stock || !productData.category) {
