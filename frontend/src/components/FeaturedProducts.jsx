@@ -33,7 +33,7 @@ const FeaturedProducts = () => {
     (async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/product/get-products`);
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/product/get-products?featured=true&limit=7`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setProducts(data.products);
