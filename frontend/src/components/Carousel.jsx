@@ -1,6 +1,6 @@
 const slides = [
   {
-    image: "https://www.waldorleather.com/cdn/shop/files/travel_tan_brown_2.jpg?v=1752846659&width=1100",
+    image: "/images/luveo/banner.jpeg",
     mobileImage: "https://www.waldorleather.com/cdn/shop/files/travel_navy_grey_4.5.jpg?v=1752426246",
     category: "New Arrivals",
     title: "Everyday Luxury",
