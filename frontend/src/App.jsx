@@ -24,9 +24,9 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 
 /* Wrap public pages with the Prada Navbar + Footer */
-const PublicLayout = ({ children }) => (
+const PublicLayout = ({ children, transparentNav = false }) => (
   <>
-    <Navbar />
+    <Navbar transparent={transparentNav} />
     <main>{children}</main>
     <Footer />
   </>
@@ -72,7 +72,7 @@ const App = () => {
 
       <Routes>
         {/* Public routes with Navbar + Footer layout */}
-        <Route path='/' element={<PublicLayout><Home isLayout={false} /></PublicLayout>} />
+        <Route path='/' element={<PublicLayout transparentNav><Home isLayout={false} /></PublicLayout>} />
         <Route path='/signup' element={<PublicLayout><Signup /></PublicLayout>} />
         <Route path='/login' element={<PublicLayout><Login /></PublicLayout>} />
         <Route path='/product/:id' element={<PublicLayout><ProductDisplay /></PublicLayout>} />

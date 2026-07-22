@@ -1,18 +1,14 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
-import AlertMessage from "./Alert";
-import { motion, AnimatePresence } from "framer-motion";
 
 const ProductCard = ({ product, loading }) => {
-  const navigate = useNavigate();
   const [userId, setUserId] = useState(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const [alert, setAlert] = useState({ show: false, message: "", type: "success" });
 
   useEffect(() => {
-    try {   
+    try {
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
         const user = JSON.parse(storedUser);
@@ -23,161 +19,140 @@ const ProductCard = ({ product, loading }) => {
     }
   }, []);
 
-  const showAlert = (message, type = "success") => setAlert({ show: true, message, type });
-  const hideAlert = () => setAlert(prev => ({ ...prev, show: false }));
-
-  const ensureUserId = async () => {
-    if (userId) return userId;
-
-    try {
-      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/guest-signup`);
-      const user = res.data?.newUser;
-      const id = user?.id || user?._id;
-
-      if (!id) throw new Error("Unable to create guest account");
-
-      localStorage.setItem("user", JSON.stringify(user));
-      setUserId(id);
-      return id;
-    } catch (e) {
-      showAlert("Error creating guest account", "error");
-      throw e;
-    }
-  };
-
   const addToCart = async (productId) => {
     setIsAddingToCart(true);
-
     try {
-      const ensuredUserId = await ensureUserId();
-      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/product/add-to-cart`, { productId, userId: ensuredUserId });
-
-      showAlert(res.data.message || "Added to cart", "success");
-      navigate("/profile");
+      let uid = userId;
+      if (!uid) {
+        const res = await axios.get(
+          import.meta.env.VITE_BACKEND_URL + "/user/guest-signup"
+        );
+        const user = res.data?.newUser;
+        const id = user?.id || user?._id;
+        if (!id) throw new Error("Unable to create guest account");
+        localStorage.setItem("user", JSON.stringify(user));
+        setUserId(id);
+        uid = id;
+      }
+      await axios.post(
+        import.meta.env.VITE_BACKEND_URL + "/product/add-to-cart",
+        { productId, userId: uid }
+      );
     } catch (e) {
-      showAlert(e.response?.data?.message || "Failed to add to cart", "error");
+      console.error(e);
     } finally {
       setIsAddingToCart(false);
     }
   };
 
-  const primaryImage = product?.colors?.[0]?.images?.[0];
-  const secondaryImage = product?.colors?.[0]?.images?.[1];
+  const primaryImage =
+    product?.colors?.[0]?.images?.[0] || product?.img?.[0];
+  const secondaryImage =
+    product?.colors?.[0]?.images?.[1] || product?.img?.[1] || primaryImage;
+  const hasDiscount = product?.price > product?.discountPrice;
+  const discountPct = hasDiscount
+    ? Math.round(
+        ((product.price - product.discountPrice) / product.price) * 100
+      )
+    : 0;
+  const outOfStock = product?.stock <= 0;
 
   if (loading) return <SkeletonCard />;
 
   return (
-    <>
-      {alert.show && (
-        <AlertMessage message={alert.message} type={alert.type} onClose={hideAlert} duration={4000} showCloseButton />
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="group relative flex flex-col bg-white border border-[var(--prada-border)] transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]"
+    >
+      {hasDiscount && (
+        <span className="absolute top-3 left-3 z-10 text-[9px] font-semibold tracking-[0.08em] uppercase bg-[var(--brand-accent)] text-white px-2 py-1">
+          {discountPct}% off
+        </span>
       )}
-      {/* ── Main Rounded Card Container ── */}
-      <div
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        className={`relative flex w-full max-w-[360px] flex-col bg-[#ededed] rounded-[26px] px-6 py-6 border border-[#d8d8d8] transition-all duration-300 ease-out ${
-          hovered ? "shadow-[0_22px_60px_rgba(0,0,0,0.16)] scale-[1.015]" : "shadow-[0_16px_44px_rgba(0,0,0,0.12)]"
-        }`}
-        style={{ minWidth: "340px" }}
-      >
-        {/* Discount badge */}
-        {product.price > product.discountPrice && (
-          <span className="absolute top-4 right-4 z-10 text-[0.7rem] font-semibold uppercase tracking-[0.05em] bg-[#ff2d55] text-white px-3 py-1 rounded-full shadow-[0_8px_18px_rgba(255,45,85,0.25)]">
-            SAVE {Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
-          </span>
-        )}
 
-        {/* Out of stock overlay */}
-        {product.stock <= 0 && (
-          <div className="absolute top-4 left-4 z-10 bg-black/70 text-white px-2.5 py-1 rounded-md text-[0.75rem] font-semibold tracking-[0.05em] uppercase">
+      {outOfStock && (
+        <div className="absolute inset-0 z-10 bg-white/60 flex items-center justify-center">
+          <span className="text-[10px] font-semibold tracking-[0.12em] uppercase text-[var(--prada-black)]">
             Sold Out
-          </div>
-        )}
+          </span>
+        </div>
+      )}
 
-        {/* Image container */}
-        <Link to={`/product/${product._id}`} className="block no-underline flex-grow">
-          <div className="relative w-full aspect-square overflow-hidden flex items-center justify-center bg-[#f5f5f5] rounded-[18px] p-0">
-            <img
-              src={hovered && secondaryImage ? secondaryImage : primaryImage}
-              alt={product.name}
-              loading="lazy"
-              className="w-full h-full object-cover transition-opacity duration-300 ease-out drop-shadow-[0_12px_30px_rgba(0,0,0,0.12)]"
-            />
-          </div>
+      <Link to={"/product/" + product._id} className="block">
+        <div className="relative w-full aspect-[4/5] overflow-hidden bg-[var(--prada-off-white)]">
+          <img
+            src={hovered && secondaryImage ? secondaryImage : primaryImage}
+            alt={product.name}
+            loading="lazy"
+            className="w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.03]"
+          />
+        </div>
+      </Link>
+
+      <div className="p-4 flex flex-col gap-2.5">
+        <Link to={"/product/" + product._id} className="no-underline">
+          <h3 className="text-sm font-semibold text-[var(--prada-black)] leading-snug">
+            {product.name}
+          </h3>
         </Link>
 
-        {/* Info below image */}
-        <div className="pt-5 flex flex-col gap-4">
-          {/* Title */}
-          <Link to={`/product/${product._id}`} className="no-underline text-inherit">
-            <h3 className="text-2xl font-extrabold text-[#111111] tracking-tight leading-[1.15] m-0">
-              {product.name || "ATOM-X Pro"}
-            </h3>
-          </Link>
-
-          {/* Color Swatches */}
-          <div className="flex items-center gap-2">
-            {(product.colors && product.colors.length > 0 ? product.colors.slice(0, 5) : [
-              { hex: "#e8ddcf" },
-              { hex: "#7c6ad6" },
-              { hex: "#9c6b4f" },
-              { hex: "#3d7f5f" },
-              { hex: "#0f0f0f" },
-            ]).map((color, idx) => (
+        {product.colors && product.colors.length > 0 && (
+          <div className="flex items-center gap-1.5">
+            {product.colors.slice(0, 5).map((color, idx) => (
               <span
-                key={`${color.hex}-${idx}`}
-                className={`w-[20px] h-[20px] rounded-full shadow-[0_3px_8px_rgba(0,0,0,0.08)] outline outline-1 outline-[#d7d7d7] ${
-                  idx === 0 ? "ring-2 ring-offset-2 ring-[#0f0f0f] ring-offset-[#ededed]" : ""
-                }`}
-                style={{ background: color.hex }}
+                key={idx}
+                className="w-3 h-3 rounded-full border border-[var(--prada-border)]"
+                style={{ backgroundColor: color.hex }}
               />
             ))}
           </div>
+        )}
 
-          {/* Pricing */}
-          <div className="flex items-baseline gap-2">
-            {product.price > product.discountPrice && (
-              <span className="text-base font-medium text-[#b0b0b0] line-through">
-                Rs.{product.price?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-              </span>
-            )}
-            <span className="text-xl font-bold text-[#0b0b0b]">
-              Rs.{product.discountPrice?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+        <div className="flex items-baseline gap-2">
+          {hasDiscount && (
+            <span className="text-xs text-[var(--prada-mid-gray)] line-through">
+              Rs.{product.price?.toLocaleString()}
             </span>
-          </div>
+          )}
+          <span className="text-sm font-bold text-[var(--prada-black)]">
+            Rs.{product.discountPrice?.toLocaleString()}
+          </span>
         </div>
 
-        {/* Hover Quick Add to Cart Button */}
-        <AnimatePresence>
-          {hovered && product.stock > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.2 }}
-              className="absolute bottom-5 left-6 right-6"
-            >
-              <button
-                onClick={(e) => { e.preventDefault(); addToCart(product._id); }}
-                disabled={isAddingToCart}
-                className="w-full py-3 rounded-xl bg-[#111111] text-white text-[0.95rem] font-semibold shadow-[0_10px_24px_rgba(0,0,0,0.15)] transition hover:-translate-y-[2px] hover:shadow-[0_14px_30px_rgba(0,0,0,0.18)] disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                {isAddingToCart ? "Adding..." : "Add to Cart"}
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            addToCart(product._id);
+          }}
+          disabled={isAddingToCart || outOfStock}
+          className={
+            "mt-1 w-full py-2.5 text-[10px] font-semibold tracking-[0.1em] uppercase border transition-all duration-200 " +
+            (outOfStock
+              ? "border-[var(--prada-border)] text-[var(--prada-mid-gray)] cursor-not-allowed"
+              : "border-[var(--prada-black)] text-[var(--prada-black)] hover:bg-[var(--prada-black)] hover:text-white active:scale-[0.98]")
+          }
+        >
+          {isAddingToCart ? "Adding" : outOfStock ? "Unavailable" : "Add to Cart"}
+        </button>
       </div>
-    </>
+    </div>
   );
 };
 
 const SkeletonCard = () => (
-  <div className="bg-[#f7f7f7] rounded-2xl p-4 h-[360px] flex flex-col animate-pulse">
-    <div className="w-full flex-1 bg-[#e5e5e5] rounded-lg mb-4" />
-    <div className="h-5 w-[70%] bg-[#e5e5e5] mb-3 rounded" />
-    <div className="h-4 w-[30%] bg-[#e5e5e5] rounded" />
+  <div className="flex flex-col bg-white border border-[var(--prada-border)] animate-pulse">
+    <div className="w-full aspect-[4/5] bg-[var(--prada-off-white)]" />
+    <div className="p-4 flex flex-col gap-3">
+      <div className="h-4 w-3/4 bg-[var(--prada-light-gray)]" />
+      <div className="flex gap-1.5">
+        <div className="w-3 h-3 rounded-full bg-[var(--prada-light-gray)]" />
+        <div className="w-3 h-3 rounded-full bg-[var(--prada-light-gray)]" />
+        <div className="w-3 h-3 rounded-full bg-[var(--prada-light-gray)]" />
+      </div>
+      <div className="h-4 w-1/3 bg-[var(--prada-light-gray)]" />
+      <div className="h-9 w-full bg-[var(--prada-light-gray)] mt-1" />
+    </div>
   </div>
 );
 

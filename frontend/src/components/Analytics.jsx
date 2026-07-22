@@ -1,277 +1,244 @@
-
-
-import React, { useState, useEffect } from 'react';
-import axios from 'axios'
+import { useState, useEffect, useRef } from 'react';
 import AdminBackLink from './AdminBackLink';
 
 const Analytics = () => {
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [sortBy, setSortBy] = useState('visitCount');
-    const [sortOrder, setSortOrder] = useState('desc');
-    const [searchTerm, setSearchTerm] = useState('');
-    const [totalVisits, setTotalVisits] = useState('0')
+  const [timeFrame, setTimeFrame] = useState('monthly');
+  const [chartType, setChartType] = useState('revenue');
+  const chartRef = useRef(null);
+  const [theme, setTheme] = useState('dark');
 
-    useEffect(() => {
-        const fetchProducts = async () => {
-            setLoading(true);
-            try {
-                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/product/get-products`);
+  const [analyticsData, setAnalyticsData] = useState({
+    totalProducts: 0,
+    totalOrders: 0,
+    totalUser: 0,
+    totalSales: 0,
+    totalCoupons: 0,
+    totalDiscountAmount: 0,
+  });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
+  const [filteredProducts, setFilteredProducts] = useState('all');
+  const [filteredOrders, setFilteredOrders] = useState('all');
 
-                const data = await response.json();
-                setData(data.products);
-                setError(null);
-            } catch (error) {
-                console.error("Error fetching products:", error);
-                setError("Failed to load products");
-                setData([]);
-            } finally {
-                setLoading(false);
-            }
-        };
+  const [chartPoints, setChartPoints] = useState([]);
 
-        fetchProducts();
-    }, []);
+  const containerRef = useRef(null);
 
-    // Filter and sort data
-    const filteredData = data
-        .filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
-        .sort((a, b) => {
-            if (sortOrder === 'asc') {
-                return a[sortBy] > b[sortBy] ? 1 : -1;
-            } else {
-                return a[sortBy] < b[sortBy] ? 1 : -1;
-            }
-        });
-
-    // For statistics
-    // const totalVisits = data.reduce((sum, product) => sum + (product.visitCount || 0), 0);
-    const getTotalVisits = async () => {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/globalVisitCount`)
-        console.log(response.data.message)
-        setTotalVisits(response.data.message.globalVisitCount)
+  const fetchAnalyticsData = async () => {
+    try {
+      const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/admin/analytics');
+      const data = await response.json();
+      const totals = {
+        totalProducts: data.totalProducts,
+        totalOrders: data.totalOrders,
+        totalUser: data.totalUser,
+        totalSales: data.totalSales,
+        totalCoupons: data.totalCoupons,
+        totalDiscountAmount: data.totalDiscountAmount,
+      };
+      setAnalyticsData(totals);
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
     }
-    // totalVisits()
-    useEffect(() => {
-        getTotalVisits()
-    }, [])
-    const totalProductVisits = data.reduce((total, product) => total + product.visitCount, 0);
-    const avgVisits = data.length ? (totalProductVisits / data.length).toFixed(1) : 0;
-    // const topProduct = data.length ? [...data].sort((a, b) => b.visitCount - a.visitCount)[0] : null;
-    const topProducts = data.length ? [...data].sort((a, b) => b.visitCount - a.visitCount).slice(0, 3) : [];
+  };
 
-    const productVisitRate = (totalProductVisits / totalVisits) * 100
+  useEffect(() => {
+    fetchAnalyticsData();
+  }, []);
 
+  useEffect(() => {
+    const fetchChartData = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/admin/analytics?timeFrame=${timeFrame}`);
+        const data = await response.json();
+        setChartPoints(data.chartData || []);
+      } catch (error) {
+        console.error('Error fetching chart data:', error);
+      }
+    };
+    fetchChartData();
+  }, [timeFrame]);
 
-    return (
-        <div className="bg-gray-50 min-h-screen p-6">
-            <div className="max-w-7xl mx-auto">
-                <AdminBackLink />
-                {/* Header */}
-                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                    <h1 className="text-3xl font-bold text-gray-800">Product Analytics Dashboard</h1>
-                    <p className="text-gray-500 mt-2">Track product performance and visitor engagement</p>
-                </div>
+  const drawChart = () => {
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    const w = rect.width;
+    const h = rect.height;
+    const padding = 40;
+    const chartW = w - padding * 2;
+    const chartH = h - padding * 2;
 
-                {/* Loading and Error States */}
-                {loading && (
-                    <div className="bg-white rounded-lg shadow-md p-8 mb-6 flex justify-center">
-                        <div className="animate-pulse flex flex-col items-center">
-                            <div className="h-12 w-12 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div>
-                            <p className="text-gray-600 mt-4">Loading analytics data...</p>
-                        </div>
-                    </div>
-                )}
+    ctx.clearRect(0, 0, w, h);
 
-                {error && (
-                    <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-md">
-                        <div className="flex">
-                            <div className="flex-shrink-0">
-                                <svg className="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                </svg>
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-sm text-red-700">{error}</p>
-                            </div>
-                        </div>
-                    </div>
-                )}
+    const isDark = theme === 'dark';
+    ctx.strokeStyle = isDark ? '#333' : '#E5E7EB';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = padding + (chartH / 4) * i;
+      ctx.beginPath();
+      ctx.moveTo(padding, y);
+      ctx.lineTo(w - padding, y);
+      ctx.stroke();
+    }
 
-                {!loading && !error && (
-                    <>
-                        {/* Stats Overview */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                            <div className="bg-white rounded-lg shadow-md p-6">
-                                <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wide">Total Products</h3>
-                                <p className="mt-2 text-4xl font-bold text-gray-900">{data.length}</p>
-                            </div>
-                            <div className="bg-white rounded-lg shadow-md p-6">
-                                <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wide">Total Site  Visits</h3>
-                                <p className="mt-2 text-4xl font-bold text-indigo-600">{totalVisits}</p>
-                            </div>
-                            <div className="bg-white rounded-lg shadow-md p-6">
-                                <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wide">Total Product Visits</h3>
-                                <p className="mt-2 text-4xl font-bold text-green-600">{totalProductVisits}</p>
-                            </div>
-                            <div className="bg-white rounded-lg shadow-md p-6">
-                                <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wide"> Product Visit Rate</h3>
-                                <p className="mt-2 text-4xl font-bold text-green-600">{productVisitRate.toFixed(2)}%</p>
-                            </div>
-                            <div className="bg-white rounded-lg shadow-md p-6">
-                                <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wide"> Avg Views per Product</h3>
-                                <p className="mt-2 text-4xl font-bold text-green-600">{avgVisits}</p>
-                            </div>
-                        </div>
+    if (!chartPoints.length) {
+      ctx.fillStyle = isDark ? '#666' : '#9CA3AF';
+      ctx.font = '11px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('No data', w / 2, h / 2);
+      return;
+    }
 
-                        {/* Most Popular Products */}
-                        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 shadow-lg border border-indigo-100">
-                            <h3 className="text-indigo-700 text-base font-bold uppercase tracking-wide mb-6 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                                Top Performing Products
-                            </h3>
+    const values = chartType === 'revenue' ? chartPoints.map((p) => p.totalSales) : chartPoints.map((p) => p.orderCount);
+    const maxVal = Math.max(...values, 1);
+    const points = chartPoints.map((p, i) => {
+      const x = padding + (chartW / Math.max(chartPoints.length - 1, 1)) * i;
+      const y = padding + chartH - (values[i] / maxVal) * chartH;
+      return { x, y, label: p._id, value: values[i] };
+    });
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {topProducts.map((topProduct, index) => (
-                                    <div
-                                        key={topProduct.id || index}
-                                        className="bg-white rounded-lg shadow-sm p-4 border border-gray-100 hover:shadow-md transition-shadow duration-300 ease-in-out flex flex-col"
-                                    >
-                                        <div className="flex items-center">
-                                            <div className="flex-shrink-0 h-16 w-16 bg-gray-100 rounded-lg overflow-hidden shadow-inner">
-                                                <img
-                                                    src={topProduct.colors?.[0]?.images?.[0] || "/api/placeholder/64/64"}
-                                                    alt={topProduct.name}
-                                                    className="h-full w-full object-cover"
-                                                />
-                                            </div>
-                                            <div className="ml-4">
-                                                <h4 className="text-md font-semibold text-gray-900 line-clamp-1">{topProduct.name}</h4>
-                                                <div className="flex items-center mt-1">
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                                        <span className="font-medium">{topProduct.visitCount || 0}</span> visits
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+    ctx.beginPath();
+    ctx.strokeStyle = '#121212';
+    ctx.lineWidth = 2;
+    points.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+    ctx.stroke();
 
+    points.forEach((p) => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#121212';
+      ctx.fill();
+    });
+  };
 
-                        {/* Product Table */}
-                        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                            <div className="px-6 py-4 border-b border-gray-200">
-                                <h3 className="text-lg font-semibold text-gray-700">Product Visit Details</h3>
-                                <div className="mt-2 flex flex-col sm:flex-row justify-between gap-4">
-                                    {/* Search bar */}
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            className="border border-gray-300 rounded-md pl-10 pr-4 py-2 w-full sm:w-64"
-                                            placeholder="Search products..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                        />
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                                            </svg>
-                                        </div>
-                                    </div>
+  const canvasRef = useRef(null);
 
-                                    {/* Sort options */}
-                                    <div className="flex gap-2">
-                                        <select
-                                            className="border border-gray-300 rounded-md px-3 py-2"
-                                            value={sortBy}
-                                            onChange={(e) => setSortBy(e.target.value)}
-                                        >
-                                            <option value="name">Name</option>
-                                            <option value="visitCount">Visit Count</option>
-                                        </select>
-                                        <button
-                                            className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md"
-                                            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                                        >
-                                            {sortOrder === 'asc' ? (
-                                                <svg className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-                                                </svg>
-                                            ) : (
-                                                <svg className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
-                                                </svg>
-                                            )}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+  useEffect(() => {
+    const timer = setTimeout(drawChart, 100);
+    window.addEventListener('resize', drawChart);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', drawChart);
+    };
+  }, [chartPoints, theme, chartType]);
 
-                            {filteredData.length === 0 ? (
-                                <div className="text-center py-6">
-                                    <p className="text-gray-500">No products found</p>
-                                </div>
-                            ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Product
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Visit Count
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {filteredData.map((product) => (
-                                                <tr key={product._id} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="flex items-center">
-                                                            <div className="flex-shrink-0 h-10 w-10">
-                                                                <img
-                                                                    className="h-10 w-10 rounded-full object-cover"
-                                                                    src={product.colors?.[0]?.images?.[0] || "/api/placeholder/40/40"}
-                                                                    alt={product.name}
-                                                                />
-                                                            </div>
-                                                            <div className="ml-4">
-                                                                <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                                                                <div className="text-sm text-gray-500">ID: {product._id}</div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm font-medium text-gray-900">{product.visitCount || 0}</div>
-                                                        <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
-                                                            <div
-                                                                className="bg-blue-600 h-2.5 rounded-full"
-                                                                style={{ width: `${((product.visitCount || 0) / (topProducts[0]?.visitCount || 1)) * 100}%` }}
-                                                            ></div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </div>
-                    </>
-                )}
-            </div>
+  const filteredCount = [
+    { label: 'all', count: analyticsData.totalProducts, set: () => setFilteredProducts('all') },
+    { label: 'visible', count: 0, set: () => setFilteredProducts('visible') },
+    { label: 'hidden', count: 0, set: () => setFilteredProducts('hidden') },
+  ];
+
+  const orderFilteredCount = [
+    { label: 'all', count: analyticsData.totalOrders, set: () => setFilteredOrders('all') },
+    { label: 'pending', count: 0, set: () => setFilteredOrders('pending') },
+    { label: 'shipped', count: 0, set: () => setFilteredOrders('shipped') },
+    { label: 'delivered', count: 0, set: () => setFilteredOrders('delivered') },
+    { label: 'cancelled', count: 0, set: () => setFilteredOrders('cancelled') },
+    { label: 'return', count: 0, set: () => setFilteredOrders('return') },
+  ];
+
+  const handleFilterClick = (setter) => { setter(); };
+
+  return (
+    <div ref={containerRef} className="px-[clamp(16px,4vw,40px)] py-8">
+      <AdminBackLink />
+
+      <div className="flex flex-wrap items-center gap-4 mb-6">
+        <h2 className="text-sm font-bold tracking-[0.05em] uppercase text-[var(--prada-black)]">
+          Analytics
+        </h2>
+        <div className="flex gap-2 ml-auto">
+          <button
+            onClick={() => setChartType('revenue')}
+            className={`px-3 py-2 text-[9px] font-semibold tracking-[0.08em] uppercase border transition-colors ${chartType === 'revenue' ? 'bg-[var(--prada-black)] text-white border-[var(--prada-black)]' : 'border-[var(--prada-border)] text-[var(--prada-mid-gray)] hover:border-[var(--prada-black)]'}`}
+          >
+            Revenue
+          </button>
+          <button
+            onClick={() => setChartType('orders')}
+            className={`px-3 py-2 text-[9px] font-semibold tracking-[0.08em] uppercase border transition-colors ${chartType === 'orders' ? 'bg-[var(--prada-black)] text-white border-[var(--prada-black)]' : 'border-[var(--prada-border)] text-[var(--prada-mid-gray)] hover:border-[var(--prada-black)]'}`}
+          >
+            Orders
+          </button>
         </div>
-    );
+        <select
+          value={timeFrame}
+          onChange={(e) => setTimeFrame(e.target.value)}
+          className="border border-[var(--prada-border)] px-3 py-2 text-xs text-[var(--prada-black)] outline-none bg-white"
+        >
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+          <option value="yearly">Yearly</option>
+        </select>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        {[
+          { label: 'Total Products', value: analyticsData.totalProducts },
+          { label: 'Total Orders', value: analyticsData.totalOrders },
+          { label: 'Total Users', value: analyticsData.totalUser },
+          { label: 'Total Sales', value: '$' + (analyticsData.totalSales || 0).toLocaleString() },
+          { label: 'Total Coupons', value: analyticsData.totalCoupons },
+          { label: 'Total Discount', value: '$' + (analyticsData.totalDiscountAmount || 0).toLocaleString() },
+        ].map((stat) => (
+          <div key={stat.label} className="border border-[var(--prada-border)] bg-white p-4">
+            <p className="text-[9px] font-mono tracking-[0.08em] uppercase text-[var(--prada-mid-gray)] mb-1">{stat.label}</p>
+            <p className="text-lg font-bold text-[var(--prada-black)]">{stat.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="border border-[var(--prada-border)] bg-white p-4 sm:p-6 mb-8">
+        <canvas
+          ref={canvasRef}
+          className="w-full h-72"
+          style={{ display: 'block' }}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="border border-[var(--prada-border)] bg-white p-4 sm:p-6">
+          <h3 className="text-[10px] font-semibold tracking-[0.08em] uppercase text-[var(--prada-black)] mb-4">
+            Products
+          </h3>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {filteredCount.map((f) => (
+              <button key={f.label} onClick={() => handleFilterClick(f.set)}
+                className={`px-3 py-1.5 text-[9px] uppercase tracking-[0.08em] border transition-colors ${filteredProducts === f.label ? 'bg-[var(--prada-black)] text-white border-[var(--prada-black)]' : 'border-[var(--prada-border)] text-[var(--prada-mid-gray)] hover:border-[var(--prada-black)]'}`}>
+                {f.label} ({f.count})
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] font-mono text-[var(--prada-mid-gray)]">
+            Filter controls — product data required for breakdown.
+          </p>
+        </div>
+
+        <div className="border border-[var(--prada-border)] bg-white p-4 sm:p-6">
+          <h3 className="text-[10px] font-semibold tracking-[0.08em] uppercase text-[var(--prada-black)] mb-4">
+            Orders
+          </h3>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {orderFilteredCount.map((f) => (
+              <button key={f.label} onClick={() => handleFilterClick(f.set)}
+                className={`px-3 py-1.5 text-[9px] uppercase tracking-[0.08em] border transition-colors ${filteredOrders === f.label ? 'bg-[var(--prada-black)] text-white border-[var(--prada-black)]' : 'border-[var(--prada-border)] text-[var(--prada-mid-gray)] hover:border-[var(--prada-black)]'}`}>
+                {f.label} ({f.count})
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] font-mono text-[var(--prada-mid-gray)]">
+            Filter controls — order data required for breakdown.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Analytics;

@@ -1,345 +1,330 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { FiBox, FiUsers, FiTrendingUp, FiShoppingCart, FiBell, FiLogOut, FiMenu, FiX, FiChevronRight } from 'react-icons/fi';
+
+const navItems = [
+  { path: "/add-product", label: "Products", icon: FiBox },
+  { path: "/add-users", label: "Users", icon: FiUsers },
+  { path: "/analytics", label: "Analytics", icon: FiTrendingUp },
+  { path: "/orders", label: "Orders", icon: FiShoppingCart },
+  { path: "/notification", label: "Notifications", icon: FiBell },
+];
+
+const statusConfig = {
+  pending: { label: "Pending", color: "text-yellow-700", bg: "bg-yellow-50" },
+  packing: { label: "Packing", color: "text-blue-700", bg: "bg-blue-50" },
+  shipped: { label: "Shipped", color: "text-indigo-700", bg: "bg-indigo-50" },
+  delievered: { label: "Delivered", color: "text-green-700", bg: "bg-green-50" },
+};
 
 const Admin = () => {
-    const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
-    const location = useLocation();
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
+  const location = useLocation();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    // Dashboard data states
-    const [dashboardData, setDashboardData] = useState({
-        usersCount: 0,
-        productCount: 0,
-        revenue: 0,
-        pendingOrders: 0,
-        packingOrders:0,
-        shippedOrders: 0,
-        delieveredOrders: 0,
-        recentOrders: [] // Fixed naming
-    });
+  const [dashboardData, setDashboardData] = useState({
+    usersCount: 0,
+    productCount: 0,
+    revenue: 0,
+    pendingOrders: 0,
+    packingOrders: 0,
+    shippedOrders: 0,
+    delieveredOrders: 0,
+    recentOrders: [],
+  });
 
-    // Format currency
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'PKR',
-            minimumFractionDigits: 2
-        }).format(amount);
+  const formatCurrency = (amount) =>
+    "Rs." + Number(amount).toLocaleString(undefined, { minimumFractionDigits: 2 });
+
+  const formatDate = (dateString) =>
+    new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(dateString));
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    const safeFetch = async (url, fallback) => {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) return fallback;
+        return (await res.json().catch(() => fallback)) ?? fallback;
+      } catch {
+        return fallback;
+      }
     };
 
-    // Format date
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return new Intl.DateTimeFormat('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }).format(date);
+    try {
+      const [usersData, productsData, revenueData, ordersData] = await Promise.all([
+        safeFetch(import.meta.env.VITE_BACKEND_URL + "/user/get-users", []),
+        safeFetch(import.meta.env.VITE_BACKEND_URL + "/product/get-products", { products: [] }),
+        safeFetch(import.meta.env.VITE_BACKEND_URL + "/analytics/total-revenue", { totalRevenue: 0 }),
+        safeFetch(import.meta.env.VITE_BACKEND_URL + "/analytics/all-orders", { orders: [] }),
+      ]);
+
+      const orders = ordersData?.orders || [];
+      let pending = 0, packing = 0, shipped = 0, delievered = 0;
+      orders.forEach((order) => {
+        const s = order?.orderStatus?.toLowerCase();
+        if (s === "pending") pending++;
+        else if (s === "packing") packing++;
+        else if (s === "delievered") delievered++;
+        else if (s === "shipped") shipped++;
+      });
+
+      setDashboardData({
+        usersCount: Array.isArray(usersData) ? usersData.length : 0,
+        productCount: productsData?.products?.length || 0,
+        revenue: Number(revenueData?.totalRevenue) || 0,
+        pendingOrders: pending,
+        packingOrders: packing,
+        shippedOrders: shipped,
+        delieveredOrders: delievered,
+        recentOrders: orders,
+      });
+    } catch {
+      setDashboardData({
+        usersCount: 0, productCount: 0, revenue: 0,
+        pendingOrders: 0, packingOrders: 0, shippedOrders: 0,
+        delieveredOrders: 0, recentOrders: [],
+      });
+      setError(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) setSidebarOpen(true);
+      else if (window.innerWidth < 768) setSidebarOpen(false);
     };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-    // API calls using useCallback to prevent unnecessary recreations
-    const fetchData = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
+  useEffect(() => {
+    fetchData();
+    const intervalId = setInterval(fetchData, 600000);
+    return () => clearInterval(intervalId);
+  }, [fetchData]);
 
-        // Helper that always returns a safe object even on empty/404
-        const safeFetch = async (url, fallback) => {
-            try {
-                const res = await fetch(url);
-                if (!res.ok) {
-                    console.warn(`Non-200 from ${url}:`, res.status);
-                    return fallback;
-                }
-                const data = await res.json().catch(() => fallback);
-                return data ?? fallback;
-            } catch (err) {
-                console.error(`Error fetching ${url}:`, err);
-                return fallback;
-            }
-        };
+  const statCards = [
+    { title: "Total Users", value: dashboardData.usersCount, accent: "border-l-[var(--prada-black)]" },
+    { title: "Total Products", value: dashboardData.productCount, accent: "border-l-[var(--prada-mid-gray)]" },
+    { title: "Revenue", value: formatCurrency(dashboardData.revenue), accent: "border-l-[var(--prada-black)]" },
+    { title: "Pending", value: dashboardData.pendingOrders, accent: "border-l-yellow-600" },
+    { title: "Packing", value: dashboardData.packingOrders, accent: "border-l-blue-600" },
+    { title: "Shipped", value: dashboardData.shippedOrders, accent: "border-l-indigo-600" },
+    { title: "Delivered", value: dashboardData.delieveredOrders, accent: "border-l-green-600" },
+  ];
 
-        try {
-            // Fetch in parallel, each with its own fallback shape
-            const [usersData, productsData, revenueData, ordersData] = await Promise.all([
-                safeFetch(`${import.meta.env.VITE_BACKEND_URL}/user/get-users`, []),
-                safeFetch(`${import.meta.env.VITE_BACKEND_URL}/product/get-products`, { products: [] }),
-                safeFetch(`${import.meta.env.VITE_BACKEND_URL}/analytics/total-revenue`, { totalRevenue: 0 }),
-                safeFetch(`${import.meta.env.VITE_BACKEND_URL}/analytics/all-orders`, { orders: [] })
-            ]);
+  return (
+    <div className="flex h-screen bg-[var(--prada-off-white)]">
+      <button
+        className="fixed z-30 bottom-6 right-6 lg:hidden bg-[var(--prada-black)] text-white p-3"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        aria-label="Toggle sidebar"
+      >
+        {sidebarOpen ? <FiX size={16} /> : <FiMenu size={16} />}
+      </button>
 
-            // Process orders data with validation
-            const orders = ordersData?.orders || [];
-            let pending = 0, packing = 0, shipped = 0, delievered = 0;
-            orders.forEach(order => {
-                const status = order?.orderStatus?.toLowerCase();
-                if (status === "pending") pending++;
-                else if (status === "packing") packing++;
-                else if (status === "delievered") delievered++;
-                else if (status === 'shipped') shipped++;
-            });
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-10 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-            // Update state with all data
-            setDashboardData({
-                usersCount: Array.isArray(usersData) ? usersData.length : 0,
-                productCount: productsData?.products?.length || 0,
-                revenue: Number(revenueData?.totalRevenue) || 0,
-                pendingOrders: pending,
-                packingOrders: packing,
-                shippedOrders: shipped,
-                delieveredOrders: delievered,
-                recentOrders: orders
-            });
-
-        } catch (error) {
-            console.error("Error fetching dashboard data:", error);
-            // Keep the dashboard visible with zeroed data instead of a blocking error screen
-            setDashboardData({
-                usersCount: 0,
-                productCount: 0,
-                revenue: 0,
-                pendingOrders: 0,
-                packingOrders: 0,
-                shippedOrders: 0,
-                delieveredOrders: 0,
-                recentOrders: []
-            });
-            setError(null);
-        } finally {
-            setIsLoading(false);
+      <nav
+        className={
+          "fixed lg:relative z-20 h-full bg-[var(--prada-black)] text-white transition-all duration-300 flex flex-col " +
+          (sidebarOpen ? "w-64" : "w-0 -ml-64 lg:w-64 lg:ml-0")
         }
-    }, []); // Dependencies are stable
+      >
+        <div className="flex flex-col h-full px-5 py-6">
+          <div className="pb-6 mb-6 border-b border-white/10">
+            <Link to="/" className="text-lg font-bold tracking-[0.15em] uppercase">
+              LuvEo
+            </Link>
+            <p className="text-[10px] text-white/40 font-mono tracking-[0.15em] uppercase mt-2">
+              Admin Panel
+            </p>
+          </div>
 
-    // Responsive sidebar handler
-    useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth >= 1024) {
-                setSidebarOpen(true);
-            } else if (window.innerWidth < 768) {
-                setSidebarOpen(false);
-            }
-        };
+          <div className="flex-1 space-y-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const active = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
+                  className={
+                    "flex items-center gap-3 px-4 py-2.5 text-xs tracking-[0.05em] font-medium transition-colors " +
+                    (active
+                      ? "bg-white/10 text-white"
+                      : "text-white/50 hover:text-white hover:bg-white/5")
+                  }
+                >
+                  <Icon size={14} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
 
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    // Fetch data on component mount
-    useEffect(() => {
-        fetchData();
-
-        // Optional: Set up polling for real-time updates (increased to 10 minutes)
-        const intervalId = setInterval(fetchData, 600000);
-
-        return () => clearInterval(intervalId);
-    }, [fetchData]);
-
-    // Dashboard stats with actual data
-    const stats = [
-        { title: "Total Users", value: dashboardData.usersCount, change: "+12%", isPositive: true, icon: "👥" },
-        { title: "Total Products", value: dashboardData.productCount, change: "+7.2%", isPositive: true, icon: "📦" },
-        { title: "Revenue", value: formatCurrency(dashboardData.revenue), change: "+22%", isPositive: true, icon: "💰" },
-        { title: "Pending Orders", value: dashboardData.pendingOrders, change: "+8%", isPositive: true, icon: "⏳" },
-        { title: "Packing Orders", value: dashboardData.packingOrders, change: "+15%", isPositive: true, icon: "🚚" },
-        { title: "Shipped Orders", value: dashboardData.shippedOrders, change: "+10%", isPositive: true, icon: "✅" },
-        { title: "Delievered Orders", value: dashboardData.delieveredOrders, change: "+10%", isPositive: true, icon: "✅" },
-    ];
-    
-
-    // Navigation items
-    const navItems = [
-        // { path: "/", label: "Dashboard", icon: "🏠" },
-        { path: "/add-product", label: "Products", icon: "📦" },
-        { path: "/add-users", label: "Users", icon: "👥" },
-        { path: "/analytics", label: "Analytics", icon: "📊" },
-        { path: "/orders", label: "Orders", icon: "🛒" },
-        { path: "/notification", label: "Notifications", icon: "🔔" }
-    ];
-
-    const isActive = (path) => {
-        return location.pathname === path ? "bg-blue-600" : "";
-    };
-
-    return (
-        <div className="flex h-screen bg-gray-50">
-            {/* Mobile sidebar toggle */}
-            <button
-                className="fixed z-20 bottom-4 right-4 lg:hidden bg-blue-600 text-white p-2 rounded-full shadow-lg"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                aria-label="Toggle sidebar"
-            >
-                {sidebarOpen ? '✕' : '☰'}
+          <div className="pt-6 border-t border-white/10">
+            <button className="flex items-center gap-3 px-4 py-2.5 text-xs tracking-[0.05em] text-white/50 hover:text-white hover:bg-white/5 w-full transition-colors">
+              <FiLogOut size={14} />
+              Logout
             </button>
-
-            {/* Sidebar */}
-            <nav className={`bg-blue-700 text-white ${sidebarOpen ? 'w-64' : 'w-0 -ml-64'} lg:w-64 p-0 fixed h-full z-10 transition-all duration-300 ease-in-out lg:relative lg:translate-x-0`}>
-                <div className="p-4 flex flex-col h-full">
-                    <div className="pb-6 mb-6 border-b border-blue-600">
-                        <h1 className="font-bold text-2xl flex items-center">
-                            <span className="bg-white text-blue-700 p-1 rounded mr-2">AP</span>
-                            Admin Panel
-                        </h1>
-                    </div>
-
-                    <div className="flex-1">
-                        <div className="space-y-1">
-                            {navItems.map((item) => (
-                                <Link
-                                    key={item.path}
-                                    to={item.path}
-                                    className={`flex items-center hover:bg-blue-600 px-4 py-3 rounded transition-colors ${isActive(item.path)}`}
-                                >
-                                    <span className="mr-3">{item.icon}</span>
-                                    {item.label}
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="pt-6 border-t border-blue-600">
-                        <button className="w-full flex items-center hover:bg-blue-600 px-4 py-3 rounded transition-colors">
-                            <span className="mr-3">🚪</span>
-                            Logout
-                        </button>
-                    </div>
-                </div>
-            </nav>
-
-            {/* Main Content */}
-            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-                <div className="container mx-auto px-6 py-8">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
-                        <div>
-                            <h2 className="text-3xl font-bold text-gray-800">Dashboard</h2>
-                            <p className="text-gray-600">Welcome back, Admin</p>
-                        </div>
-
-                        {error && (
-                            <div className="mt-4 md:mt-0 text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded">
-                                {error}
-                            </div>
-                        )}
-
-                        {/* <div className="mt-4 md:mt-0 flex space-x-3">
-                            <button className="bg-white shadow-sm px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
-                                <span className="mr-2">📥</span> Export Data
-                            </button>
-                            <button className="bg-blue-600 px-4 py-2 rounded-lg text-white hover:bg-blue-700 transition-colors">
-                                <span className="mr-2">➕</span> Create New
-                            </button>
-                        </div> */}
-                    </div>
-
-                    {/* Stats Cards */}
-                    {isLoading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                            {[1, 2, 3, 4, 5, 6].map((item) => (
-                                <div key={item} className="bg-white rounded-lg shadow-sm p-6 animate-pulse">
-                                    <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
-                                    <div className="h-8 bg-gray-200 rounded w-1/2 mt-2"></div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                            {stats.map((stat, index) => (
-                                <div key={index} className="bg-white rounded-lg shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center">
-                                            <span className="text-xl mr-2">{stat.icon}</span>
-                                            <h3 className="text-gray-500 text-sm font-medium">{stat.title}</h3>
-                                        </div>
-                                        <span className={`text-sm font-medium px-2 py-1 rounded-full ${stat.isPositive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                            {stat.change}
-                                        </span>
-                                    </div>
-                                    <p className="text-3xl font-bold text-gray-800 mt-2">{stat.value}</p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* Recent Activity */}
-                    <div className="grid grid-cols-1 gap-8">
-                        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                                <h3 className="text-lg font-medium">Recent Activity</h3>
-                                <Link to={'/orders'}>
-                                    <button className="text-blue-600 text-sm hover:underline">View All</button>
-                                </Link>
-                            </div>
-
-                            {isLoading ? (
-                                <div className="p-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {[1, 2, 3].map((item) => (
-                                            <div key={item} className="h-32 bg-gray-200 animate-pulse rounded-lg"></div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="p-6">
-                                    {dashboardData.recentOrders.length > 0 ? (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            {dashboardData.recentOrders.slice(0, 6).map((item, index) => (
-                                                <div key={item._id || index} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                                    <div className="flex items-center space-x-3 mb-3">
-                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm ${
-                                                            item.orderStatus === 'pending' ? 'bg-yellow-500' :
-                                                            item.orderStatus === 'dispatched' ? 'bg-blue-500' : 'bg-green-500'
-                                                        }`}>
-                                                            {item.orderStatus === 'pending' ? '⏳' :
-                                                             item.orderStatus === 'dispatched' ? '🚚' : '✅'}
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <p className="font-semibold text-gray-800 text-sm">
-                                                                Order from: <span className="text-blue-600">{item.name}</span>
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div className="space-y-1 text-sm">
-                                                        <p className="text-gray-700">
-                                                            Amount: <span className="font-medium text-green-600">{formatCurrency(item.orderTotal)}</span>
-                                                        </p>
-                                                        <p className="text-gray-700">
-                                                            From: <span className="italic">{item.city}</span>
-                                                        </p>
-                                                        <p className="text-gray-500">
-                                                            {formatDate(item.orderDate || new Date())}
-                                                        </p>
-                                                        <p className="text-gray-500">
-                                                            Status: <span className={`font-medium ${
-                                                                item.orderStatus === 'completed' ? 'text-green-500' : 
-                                                                item.orderStatus === 'dispatched' ? 'text-blue-500' : 'text-yellow-500'
-                                                            }`}>
-                                                                {item.orderStatus}
-                                                            </span>
-                                                        </p>
-                                                    </div>
-                                                    
-                                                    <Link to={'/orders'}>
-                                                        <button className="mt-3 text-indigo-600 hover:text-indigo-900 text-sm font-medium">
-                                                            View Order
-                                                        </button>
-                                                    </Link>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="text-center py-8 text-gray-500">
-                                            No recent orders found
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </main>
+          </div>
         </div>
-    );
+      </nav>
+
+      <main className="flex-1 overflow-x-hidden overflow-y-auto">
+        <div className="max-w-[1440px] mx-auto px-6 py-8">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-lg font-bold text-[var(--prada-black)] tracking-tight">
+                Dashboard
+              </h1>
+              <p className="text-xs text-[var(--prada-mid-gray)] font-mono tracking-[0.05em] mt-1">
+                Welcome back, Admin
+              </p>
+            </div>
+
+            {error && (
+              <div className="text-[10px] text-[var(--brand-accent)] bg-red-50 border border-red-200 px-3 py-2">
+                {error}
+              </div>
+            )}
+          </div>
+
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+              {Array.from({ length: 7 }).map((_, i) => (
+                <div key={i} className="bg-white border border-[var(--prada-border)] p-5 animate-pulse">
+                  <div className="h-3 w-1/3 bg-[var(--prada-light-gray)] mb-3" />
+                  <div className="h-6 w-1/2 bg-[var(--prada-light-gray)]" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+              {statCards.map((stat, i) => (
+                <div
+                  key={i}
+                  className={
+                    "bg-white border border-[var(--prada-border)] p-5 border-l-4 " +
+                    stat.accent
+                  }
+                >
+                  <p className="text-[10px] font-mono tracking-[0.08em] uppercase text-[var(--prada-mid-gray)] mb-1.5">
+                    {stat.title}
+                  </p>
+                  <p className="text-xl font-bold text-[var(--prada-black)]">
+                    {stat.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="bg-white border border-[var(--prada-border)]">
+            <div className="px-5 py-4 border-b border-[var(--prada-border)] flex items-center justify-between">
+              <h2 className="text-xs font-semibold tracking-[0.08em] uppercase text-[var(--prada-black)]">
+                Recent Orders
+              </h2>
+              <Link
+                to="/orders"
+                className="text-[10px] font-mono text-[var(--prada-mid-gray)] hover:text-[var(--prada-black)] transition-colors flex items-center gap-1"
+              >
+                View all <FiChevronRight size={10} />
+              </Link>
+            </div>
+
+            {isLoading ? (
+              <div className="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-24 bg-[var(--prada-off-white)] animate-pulse" />
+                ))}
+              </div>
+            ) : dashboardData.recentOrders.length > 0 ? (
+              <div className="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {dashboardData.recentOrders.slice(0, 6).map((item, idx) => {
+                  const status = item.orderStatus?.toLowerCase() || "pending";
+                  const cfg = statusConfig[status] || statusConfig.pending;
+                  return (
+                    <div
+                      key={item._id || idx}
+                      className="border border-[var(--prada-border)] p-4"
+                    >
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className={"w-7 h-7 flex items-center justify-center " + cfg.bg}>
+                          <span className={"text-[10px] font-bold " + cfg.color}>
+                            {status === "pending" ? "P" : status === "packing" ? "K" : status === "shipped" ? "S" : "D"}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-[var(--prada-black)] truncate">
+                            {item.name || "Guest"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1 text-[11px]">
+                        <div className="flex justify-between">
+                          <span className="text-[var(--prada-mid-gray)]">Amount</span>
+                          <span className="font-semibold text-[var(--prada-black)]">
+                            {formatCurrency(item.orderTotal)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[var(--prada-mid-gray)]">City</span>
+                          <span className="text-[var(--prada-black)]">{item.city || "\u2014"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[var(--prada-mid-gray)]">Date</span>
+                          <span className="text-[var(--prada-mid-gray)]">
+                            {formatDate(item.orderDate)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[var(--prada-mid-gray)]">Status</span>
+                          <span className={"font-semibold " + cfg.color}>{cfg.label}</span>
+                        </div>
+                      </div>
+
+                      <Link
+                        to="/orders"
+                        className="mt-3 block text-[10px] font-mono text-[var(--prada-mid-gray)] hover:text-[var(--prada-black)] transition-colors"
+                      >
+                        View Order &rarr;
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-10">
+                <p className="text-[10px] font-mono tracking-[0.08em] uppercase text-[var(--prada-mid-gray)]">
+                  No recent orders
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
 };
 
 export default Admin;

@@ -1,47 +1,32 @@
 const ExploreWithUs = () => {
   return (
-    <section className="px-4 pb-16" aria-labelledby="explore-with-us-title">
-      <div
-        className="relative mx-auto flex max-w-[84rem] flex-col justify-center overflow-hidden rounded-[24px] bg-gray-900 text-white shadow-lg"
-        style={{
-          backgroundImage:
-            "url('https://www.waldorleather.com/cdn/shop/files/bbbb.png?v=1740510679')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          minHeight: "360px",
-        }}
-      >
-        <div className="absolute inset-0 bg-black/35" aria-hidden="true" />
+    <section className="bg-[var(--prada-black)]">
+      <div className="max-w-[1440px] mx-auto px-[clamp(20px,5vw,80px)] py-24 md:py-32">
+        <div className="max-w-2xl">
+          <span className="text-[10px] tracking-[0.22em] uppercase font-mono text-white/40">
+            Stay Connected
+          </span>
 
-        <div className="relative z-10 flex flex-col gap-4 px-6 py-12 sm:px-10 md:px-14 lg:px-16">
-          <h2
-            id="explore-with-us-title"
-            className="text-3xl font-bold leading-tight drop-shadow md:text-4xl lg:text-[44px]"
-          >
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white mt-4 leading-tight">
             Explore With Us
           </h2>
 
-          <ul className="flex list-disc flex-col gap-2 pl-5 text-lg font-medium drop-shadow">
-            <li>Product Drops</li>
-            <li>Limited Editions</li>
-            <li>Blog Posts</li>
-            <li>News & Announcements</li>
-          </ul>
+          <p className="text-sm md:text-base text-white/50 mt-4 max-w-md leading-relaxed">
+            Product drops, limited editions, blog posts, and news — delivered to your inbox.
+          </p>
 
-          <form className="mt-4 flex w-full max-w-md flex-col gap-3 sm:flex-row">
-            <label className="sr-only" htmlFor="explore-email">
-              Email address
-            </label>
+          <form className="mt-8 flex w-full max-w-md gap-3">
+            <label className="sr-only" htmlFor="explore-email">Email address</label>
             <input
               id="explore-email"
               type="email"
               required
-              placeholder="Email"
-              className="w-full rounded-[12px] border border-white/30 bg-white/90 px-4 py-3 text-[17px] font-medium text-neutral-900 shadow-sm outline-none backdrop-blur focus:border-white focus:ring-2 focus:ring-white/70"
+              placeholder="Enter your email"
+              className="flex-1 bg-white/10 border border-white/20 px-4 py-3 text-sm text-white outline-none focus:border-white/50 transition-colors placeholder:text-white/30"
             />
             <button
               type="submit"
-              className="min-w-[120px] rounded-[12px] bg-gray-900 px-5 py-3 text-[17px] font-semibold text-white shadow hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-white/70"
+              className="bg-white text-[var(--prada-black)] px-6 py-3 text-xs font-semibold tracking-[0.1em] uppercase hover:bg-white/90 transition-colors"
             >
               Submit
             </button>

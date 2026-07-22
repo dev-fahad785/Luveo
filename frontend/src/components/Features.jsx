@@ -1,52 +1,49 @@
-import { useState } from 'react';
 import { FaTruck, FaBoxOpen, FaShieldAlt } from "react-icons/fa";
 
-const InfoBanner = () => {
-  const [hoveredIndex, setHoveredIndex] = useState(null);
-  
-  const features = [
-    {
-      icon: FaTruck,
-      title: "Fast, Free Shipping",
-      description: "All over Pakistan",
-      color: "bg-blue-50"
-    },
-    {
-      icon: FaBoxOpen,
-      title: "Open Parcel Delivery",
-      description: "Free – No Question Ask",
-      color: "bg-green-50"
-    },
-    {
-      icon: FaShieldAlt,
-      title: "Secure Payment",
-      description: "100% Safe Checkout",
-      color: "bg-purple-50"
-    }
-  ];
+const features = [
+  {
+    icon: FaTruck,
+    title: "Fast, Free Shipping",
+    description: "All over Pakistan",
+  },
+  {
+    icon: FaBoxOpen,
+    title: "Open Parcel Delivery",
+    description: "Free – No Question Ask",
+  },
+  {
+    icon: FaShieldAlt,
+    title: "Secure Payment",
+    description: "100% Safe Checkout",
+  },
+];
 
+const InfoBanner = () => {
   return (
-    <div className="w-full bg-white py-8 px-4 shadow-sm">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className={`rounded-lg p-6 transition-all duration-300 ${feature.color} hover:shadow-md`}
-              onMouseEnter={() => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
-            >
-              <div className="flex items-start space-x-4">
-                <div className={`p-3 rounded-full bg-white ${hoveredIndex === index ? 'scale-110' : ''} transition-transform duration-300`}>
-                  <feature.icon className="text-gray-800 text-xl" />
+    <div className="w-full bg-white">
+      <div className="max-w-[1440px] mx-auto px-[clamp(20px,5vw,80px)]">
+        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[var(--prada-border)]">
+          {features.map((feature, index) => {
+            const Icon = feature.icon;
+            return (
+              <div
+                key={index}
+                className="flex items-center gap-4 py-6 md:py-8 md:px-8 first:md:pl-0 last:md:pr-0"
+              >
+                <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center text-[var(--prada-black)]">
+                  <Icon className="text-lg" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-900 mb-1">{feature.title}</h4>
-                  <p className="text-gray-600">{feature.description}</p>
+                  <h4 className="text-sm font-semibold tracking-[0.03em] text-[var(--prada-black)]">
+                    {feature.title}
+                  </h4>
+                  <p className="text-xs text-[var(--prada-mid-gray)] mt-0.5">
+                    {feature.description}
+                  </p>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
