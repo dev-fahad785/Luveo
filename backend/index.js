@@ -18,13 +18,14 @@ import VisitCounter from './models/visitCount.model.js';
 import visitCounter from './models/visitCount.model.js';
 import notificationRoutes from './routes/notification.routes.js';
 
-// Initialize app and services
+// Initialize app and services,
 const app = express();
 
 // Properly handle CORS origins
 const allowedOrigins = [
     "http://localhost:5173",
     "https://luveo-frontend.vercel.app",
+    "luveo-frontend-git-animation-dev-rfguls-projects.vercel.app",
 ];
 
 if (process.env.FRONT_END_URL) {
@@ -35,7 +36,8 @@ const corsOptions = {
     origin: function (origin, callback) {
         const allowedOrigins = [
             "http://localhost:5173",
-            "https://luveo-frontend.vercel.app"
+            "https://luveo-frontend.vercel.app",
+            "luveo-frontend-git-animation-dev-rfguls-projects.vercel.app"
         ];
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
